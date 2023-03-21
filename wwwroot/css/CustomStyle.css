@@ -1,0 +1,76 @@
+﻿* :not(span) {
+    font-family: 'Cascadia Code';
+}
+
+.custom_input, .custom_select {
+    transition: 0.3s linear;
+    border-radius: 15px;
+    border-color: rgba(43,44,45,0.4);
+    margin: 10px;
+    width: 400px;
+    height: 50px;
+    font-size: 20px;
+    text-indent: 10px;
+}
+
+.custom_input:hover {
+    box-shadow: 0 0 6px orange;
+    transform: scale(1.1);
+}
+
+.custom_input:focus{
+    outline: 0px;
+}
+
+.custom_h1 {
+    font-size: 40px;
+    margin-left: 70px;
+    transition: 0.2s linear;
+}
+
+.custom_h1:hover{
+    transform:scale(1.1);
+}
+
+.custom_h3 {
+    font-size: 40px;
+    margin-left: 70px;
+    transition: 0.2s linear;
+}
+
+.custom_h3:hover {
+    transform: scale(1.1);
+}
+
+.custom_div {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    border-radius: 15px;
+    transform: translate(-50%, -50%);
+    box-shadow: 1px 1px 7px 1px black;
+
+    padding: 20px;
+}
+
+.custom_button {
+    box-shadow: 1px 1px 3px #888888;
+    transition: 0.1s linear;
+    border-radius: 15px;
+    border-color: rgba(43,44,45,0.4);
+    margin: 10px;
+    width: 400px;
+    height: 50px;
+    font-size: 20px;
+    text-indent: 10px;
+}
+
+.custom_button:hover {
+    color: blue;
+    opacity: 0.8;
+    box-shadow: 0 0 6px blue;
+}
+
+body {
+    top: 300px;
+}

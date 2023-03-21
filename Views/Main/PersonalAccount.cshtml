@@ -1,0 +1,104 @@
+﻿@model UserViewModel
+
+<link rel="stylesheet" href="~/css/PersonalAccountStyle.css" />
+
+@if(User.Identity.IsAuthenticated)
+{
+    <div class="out_div">
+        <div class="first_inner_div">
+            <img class="card-photo" src ="ввв" alt="@Model.User.Fullname">
+            <h2>@Model.User.Fullname</h2>
+            <h3>Вес: @Model.User.Weight</h3>
+            <h3>Рост: @Model.User.Height</h3>
+        </div>
+        <div class="div_for_trainings">
+        <h3>Тренировки</h3>
+        @for(int i = 0; i < Model.Trainings.Count; i++)
+        {
+            <div class="second_inner_div">
+                <table class="custom_table">
+                    <thead>
+                        <tr>
+                            <th colspan="2">@Model.Trainings[i].Title</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Дата</td>
+                            <td>@Model.Trainings[i].Date.ToShortDateString()</td>
+                        </tr>
+                        <tr>
+                            <td>Продолжительность</td>
+                            <td>@Model.Trainings[i].Duration</td>
+                        </tr>
+                        <tr>
+                            <td>Калории</td>
+                            <td>@Model.Trainings[i].Calories</td>
+                        </tr>
+                        <tr>
+                            <td>Минимальный пульс</td>
+                            <td>@Model.Trainings[i].MinimumPulse</td>
+                        </tr>
+                        <tr>
+                            <td>Средний пульс</td>
+                            <td>@Model.Trainings[i].AveragePulse</td>
+                        </tr>
+                        <tr>
+                            <td>Максимальный пульс</td>
+                            <td>@Model.Trainings[i].MaximumPulse</td>
+                        </tr>
+                        <tr>
+                            <td>Шаги</td>
+                            <td>@Model.Trainings[i].Steps</td>
+                        </tr>
+                        <tr>
+                            <td>Средняя скорость</td>
+                            <td>@Model.Trainings[i].AverageSpeed</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        }
+        </div>
+
+        <div class="div_for_callback">
+            <h5>Форма обратной связи</h5>
+            <form method="post" asp-controller="Main" asp-action="SendEmail">
+                <input class="custom_button" name="message" type="text"/><br/>
+                <input class="custom_button" type="submit" value="Отправить">
+            </form>
+        </div>
+
+        @using (Html.BeginForm("Subscribe", "Main", FormMethod.Get))
+        {
+            <input asp-controller="Main" asp-action="Subscribe" class="custom_button" type="submit" value="Подписка на рассылки" />
+        }
+
+        @if(User.IsInRole(WebRunApplication.Enums.Role.Admin.ToString()))
+        {
+            @using (Html.BeginForm("AddTopic", "Admin", FormMethod.Post))
+            {
+                @Html.TextBox("newTopic");
+                <input class="custom_button" type="submit" value="Добавить рассылку" />
+            }
+
+            @using (Html.BeginForm("RemoveTopic", "Admin", FormMethod.Post))
+            {
+                @Html.ListBox("titles", ViewBag.Titles as MultiSelectList)
+                <input class="custom_button" type="submit" value="Удалить" />
+            }
+
+            @using (Html.BeginForm("ChangeTopic", "Admin", FormMethod.Post))
+            {
+                @Html.DropDownList("titles", ViewBag.Titles as SelectList)
+                @Html.TextArea("message")
+                <input class="custom_button" type="submit" value="Изменить" />
+            }
+
+            @foreach(var pair in ViewBag.TitlesDictionary)
+            {
+                 <h5>@pair.Key: @pair.Value.Item1 (@pair.Value.Item2 пользователей) (@pair.Value.Item3 подписчиков)</h5>
+            }
+        }
+    </div>
+}

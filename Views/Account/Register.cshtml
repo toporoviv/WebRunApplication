@@ -1,0 +1,28 @@
+﻿@model RegisterModel
+
+<link rel="stylesheet" href="~/css/CustomStyle.css" />
+
+<div class="custom_div">
+    <h1 class="custom_h1">Регистрация</h1>
+    <form autocomplete="on" method="post" asp-controller="Account" asp-action="Login">
+        <input asp-for="Login" class="custom_input" type="text" placeholder="Логин" /><br/>
+        <span asp-validation-for="Login"></span>
+        <input asp-for="Password" class="custom_input" type="password" placeholder="Пароль"/><br/>
+        <span asp-validation-for="Password"></span>
+        <input asp-for="ConfirmPassword" class="custom_input" type="password" placeholder="Повторите пароль"/><br/>
+        <span asp-validation-for="ConfirmPassword"></span>
+        <input asp-for="Fullname" class="custom_input" type="text" placeholder="Фамилия имя" /></br>
+        <span asp-validation-for="Fullname"></span>
+        <input asp-for="Email" class="custom_input" type="email" placeholder="Email" /></br>
+        <span asp-validation-for="Email"></span>
+        <input asp-for="Age" class="custom_input" type="number" placeholder="Возраст" /></br>
+        <span asp-validation-for="Age"></span>
+        <select asp-for="Gender" class="custom_select" asp-items="Html.GetEnumSelectList<WebRunApplication.Enums.Gender>()"></select></br>
+        <span asp-validation-for="Gender"></span>
+        <input asp-for="Weight" class="custom_input" type="number" placeholder="Рост" /></br>
+        <span asp-validation-for="Weight"></span>
+        <input asp-for="Height" class="custom_input" type="number" placeholder="Вес" /></br>
+        <span asp-validation-for="Height"></span>
+        <input asp-controller="Account" asp-action="Register" class="custom_button" type="submit" value="Зарегистрироваться" />
+    </form>
+</div>

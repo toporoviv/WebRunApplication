@@ -1,0 +1,14 @@
+﻿@model AuthorizationModel
+
+<link rel="stylesheet" href="~/css/CustomStyle.css" />
+
+<div class="custom_div">
+    <h1 class="custom_h1">Авторизация</h1>
+    <form autocomplete="on" method="post" asp-controller="Account" asp-action="Login">
+        <input asp-for="Login" class="custom_input" type="text" placeholder="Логин" /><br/>
+        <span asp-validation-for="Login"></span>
+        <input asp-for="Password" class="custom_input" type="password" placeholder="Пароль"/><br/>
+        <span asp-validation-for="Password"></span>
+        <input asp-controller="Account" asp-action="Login" class="custom_button" type="submit" value="Войти" />
+    </form>
+</div>

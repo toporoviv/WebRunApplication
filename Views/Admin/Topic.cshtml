@@ -1,0 +1,18 @@
+﻿@model WebRunApplication.DataEntity.MailingTopic
+@{
+}
+
+<link rel="stylesheet" href="~/css/PersonalAccountStyle.css" />
+
+@using (Html.BeginForm("Topic", "Admin", FormMethod.Post))
+{
+    <div class="first_inner_div">
+        <div class = "card">
+             <h3>Рассылка сообщений</h3>
+        </div>
+
+        @Html.DropDownListFor(x => x.Id, ViewBag.Users as SelectList)
+        @Html.TextArea("message")
+        <input class="custom_button" type="submit" value="Отправить" />
+    </div>
+}

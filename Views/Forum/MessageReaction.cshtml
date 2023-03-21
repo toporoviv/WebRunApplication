@@ -1,0 +1,50 @@
+﻿@*@model List<MessageViewModel>
+
+<div class="inner_div">
+    @foreach (var message in Model)
+    {
+                <div id="***" class="mess" style="margin-left: @(message.NestingLevel * 70)px">
+                    <div class="unifying_div">
+                      <div class="user_icon">
+                             <img src="../background/biathleteIcon.jpg">
+                      </div>
+                        <div class="user_fullname">
+                            <h5 style="margin-left: 20px">@message.Fullname @message.Date</h5>
+                      </div>
+                   </div>
+
+                    <h5 style="margin-left: 25px ">@message.Message</h5>
+
+                    <div class="unifying_div">
+                <form method="post" asp-controller="Forum" asp-action="MessageReaction">
+
+                            <button id="ok" asp-controller="Forum" asp-action="MessageReaction" class="ghost-button-rounded-corners" type="submit"
+                            asp-route-messageId="@message.Id" asp-route-isLike="@true" data-messageId="@message.Id" data-isLike="@true">
+                                <i class='fa fa-thumbs-o-up'>
+                        @message.LikedUsers.Count
+                                </i>
+                            </button>
+
+                </form>
+                <form method="post" asp-controller="Forum" asp-action="MessageReaction">
+                                <button id="ok" asp-controller="Forum" asp-action="MessageReaction" class="ghost-button-rounded-corners" type="submit"
+                                asp-route-messageId="@message.Id" asp-route-isLike = "@false" data-messageId="@message.Id" data-isLike="@false">
+                                <i class='fa fa-thumbs-o-down'>
+                        @message.DislikedUsers.Count
+                                </i>
+                            </button>
+                </form>
+                        <form method="post" asp-controller="Forum" asp-action="Answer">                  
+                            <i class='fa fa-comment-o'> Ответить
+
+                            </i>
+                        </form>
+                        <form method="post" asp-controller="Forum" asp-action="Comments">
+                        <i class='fa fa-sort-desc'>
+
+                        </i>
+                        </form>
+                    </div>
+                </div>
+    }
+</div>*@
