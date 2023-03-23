@@ -36,6 +36,9 @@ namespace WebRunApplication.Models
             services.AddScoped<IMailingService, MailingService>();
             services.AddScoped<IMailingTopicService, MailingTopicService>();
             services.AddScoped<IMailingTopicSubscriberService, MailingTopicSubscriberService>();
+            services.AddScoped<IChartService, ChartService>();
+            services.AddScoped<ITrainingService, TrainingService>();
+            services.AddScoped<ITrainingTemplateService, TrainingTemplateService>();
         }
     }
 }

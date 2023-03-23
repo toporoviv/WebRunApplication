@@ -1,0 +1,55 @@
+﻿@model TrainingInformation
+
+<link rel="stylesheet" href="~/css/CustomStyle.css" />
+
+<body>
+    <div id="chart" ></div>
+</body>
+
+@if (ViewBag.Trainings is not null)
+{
+    @section Scripts
+    {
+        <script>
+        var temp1 = '@ViewBag.dataj';
+        var datass = JSON.parse(temp1)
+        </script>
+        
+        
+        <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+        
+            <script type="text/javascript">
+        
+              // Load the Visualization API and the corechart package.
+              google.charts.load('current', {'packages':['corechart']});
+        
+              // Set a callback to run when the Google Visualization API is loaded.
+              google.charts.setOnLoadCallback(drawChart);
+        
+              // Callback that creates and populates a data table,
+              // instantiates the pie chart, passes in the data and
+              // draws it.
+          function drawChart() {
+    
+          var data = new google.visualization.DataTable();
+                         data.addColumn('string', 'Тренировка');
+                           data.addColumn('number', 'Кол-во тренировок');
+                           data.addRows(datass);
+               
+        
+                  var options = {
+                    title : 'Количество тренировок по каждому типу',
+                    vAxis: {title: 'Кол-во тренировок'},
+                    hAxis: {title: 'Тип тренировки'},
+                    seriesType: 'bars',
+                    series: {5: {type: 'line'}},
+                    height: 500
+                  };
+
+            // Instantiate and draw our chart, passing in some options.
+             var chart = new google.visualization.ComboChart(document.getElementById('chart'));
+                   chart.draw(data, options);
+          }
+        </script>
+    }
+}
