@@ -68,7 +68,7 @@ namespace WebRunApplication.Services.Implementations
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"[UserSerivce.GetUsers] error: {ex.Message}");
+                _logger.LogError(ex, $"[{nameof(UserService)}.{nameof(GetAll)}] error: {ex.Message}");
                 return new BaseResponse<IEnumerable<User>>()
                 {
                     StatusCode = StatusCode.InternalServerError,
@@ -92,7 +92,7 @@ namespace WebRunApplication.Services.Implementations
                 }
 
                 await _userRepository.Delete(user);
-                _logger.LogInformation($"[UserService.DeleteUser] пользователь удален");
+                _logger.LogInformation($"[{nameof(UserService)}.{nameof(Delete)}] пользователь удален");
 
                 return new BaseResponse<bool>
                 {
@@ -102,7 +102,7 @@ namespace WebRunApplication.Services.Implementations
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"[UserSerivce.DeleteUser] error: {ex.Message}");
+                _logger.LogError(ex, $"[{nameof(UserService)}.{nameof(Delete)}] error: {ex.Message}");
                 return new BaseResponse<bool>()
                 {
                     StatusCode = StatusCode.InternalServerError,
