@@ -74,7 +74,7 @@ namespace WebRunApplication.Services.Implementations
         {
             try
             {
-                var indicator = await _userRepository.GetAll().FirstOrDefaultAsync(x => x.Id == id);
+                var indicator = await _indicatorRepository.GetAll().FirstOrDefaultAsync(x => x.Id == id);
                 if (indicator is null)
                 {
                     return new BaseResponse<bool>
@@ -84,8 +84,8 @@ namespace WebRunApplication.Services.Implementations
                     };
                 }
 
-                await _userRepository.Delete(indicator);
-                _logger.LogInformation($"[UserService.DeleteUser] пользователь удален");
+                await _indicatorRepository.Delete(indicator);
+                _logger.LogInformation($"{nameof(IndicatorService)}.{nameof(Delete)} показатель удален");
 
                 return new BaseResponse<bool>
                 {
@@ -95,7 +95,7 @@ namespace WebRunApplication.Services.Implementations
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"[UserSerivce.DeleteUser] error: {ex.Message}");
+                _logger.LogError(ex, $"[{nameof(IndicatorService)}.{nameof(Delete)}] error: {ex.Message}");
                 return new BaseResponse<bool>()
                 {
                     StatusCode = StatusCode.InternalServerError,
