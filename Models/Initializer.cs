@@ -39,6 +39,9 @@ namespace WebRunApplication.Models
             services.AddScoped<IChartService, ChartService>();
             services.AddScoped<ITrainingService, TrainingService>();
             services.AddScoped<ITrainingTemplateService, TrainingTemplateService>();
+            services.AddScoped<IDataBaseGeneratorService, DataBaseGeneratorService>();
+            services.AddScoped<IPdfService, PdfService>();
+            services.AddScoped<IIndicatorService, IndicatorService>();
         }
     }
 }
