@@ -16,190 +16,132 @@ using Org.Apache.Http.Protocol;
 using Android.Content;
 using WebRunApplication.Models;
 using System.Linq;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace WebRunApplication.Controllers
 {
+    [Authorize]
     public class PdfController : Controller
     {
-        //private readonly IUserService _userService;
+        private readonly IPdfService _pdfService;
+        private readonly ITrainingTemplateService _trainingTemplateService;
+        private readonly IUserService _userService;
+        private readonly IIndicatorService _indicatorService;
 
-        ApplicationDbContext _context;
-
-        public PdfController(ApplicationDbContext userService)
+        public PdfController(
+            IPdfService pdfService,
+            IIndicatorService indicatorService,
+            IUserService userService,
+            ITrainingTemplateService trainingTemplateService)
         {
-            _context = userService;
+            _pdfService = pdfService;
+            _indicatorService = indicatorService;
+            _userService = userService;
+            _trainingTemplateService = trainingTemplateService;
         }
 
         [HttpGet]
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            ViewBag.UserIndicators = GetUserIndicators();
-            ViewBag.UserIndicatorsResults = GetIndicatorResults();
+            ViewBag.UserIndicators = await GetUserIndicators();
+            ViewBag.UserIndicatorsResults = await GetIndicatorResults();
 
             return View();
         }
 
-        //[HttpGet]
-        //public IActionResult TrainingsList(string trainingType)
-        //{
-        //    var trainingsTypeList = _context.TrainingTypes.Select(x => x.NameType).ToList();
-        //    var selectTrainingList = SelectTrainingList(trainingType);
-
-        //    ViewBag.TrainingsTypeList = new Microsoft.AspNetCore.Mvc.Rendering.SelectList(trainingsTypeList, "NameType", "NameType");
-        //    ViewBag.SelectTrainingList = selectTrainingList;
-        //    return View();
-        //}
-
-        //[NonAction]
-        //private List<TrainingViewModel> SelectTrainingList(string trainingType)
-        //{
-        //    var trainingsViewModelList =
-        //       _context.Trainings.Select
-        //        (x => new TrainingViewModel()
-        //        {
-        //            Id = x.Id,
-        //            NameTraining = x.NameTraining,
-        //            NameType = _context.TrainingTypes.FirstOrDefault(y => y.Id == x.IdType).NameType
-
-        //        }).ToList();
-
-        //    var selectTrainingList = trainingsViewModelList
-        //        .Select(x => x)
-        //        .Where(x => x.NameType == ((trainingType is null) ? x.NameType : trainingType))
-        //        .ToList();
-
-        //    return selectTrainingList;
-        //}
-
-        [HttpPost]
-        public FileResult ExportIndicatorsPdf(string ExportData)
+        [HttpGet]
+        public async Task<IActionResult> ViewTraining()
         {
-            Document Doc = new Document(PageSize.A4);
+            var trainingTemplatesResponse = await _trainingTemplateService.GetAll();
 
-            using (var fs = new MemoryStream())
-            {
-                PdfWriter writer = PdfWriter.GetInstance(Doc, fs);
-                Doc.Open();
-                Doc.NewPage();
-
-                string ARIALUNI_TFF = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Fonts), "ARIAL.TTF");
-
-                BaseFont bf = BaseFont.CreateFont(ARIALUNI_TFF, BaseFont.IDENTITY_H, BaseFont.NOT_EMBEDDED);
-
-                Font f = new Font(bf, 12, Font.NORMAL);
-
-                var userIndicators = GetUserIndicators();
-
-                int columnCount = typeof(Indicator).GetProperties().Length - 3;
-                PdfPTable table = new PdfPTable(columnCount);
-                PdfPCell cell = new PdfPCell(new Phrase("Показатели тренировок", f));
-                cell.Colspan = columnCount;
-
-                cell.HorizontalAlignment = 1; //0=Left, 1=Centre, 2=Right
-                table.AddCell(cell);
-
-                table.AddCell(new PdfPCell(new Phrase("Дата", f)));
-                table.AddCell(new PdfPCell(new Phrase("Продолжительность", f)));
-                table.AddCell(new PdfPCell(new Phrase("Мин. пульс", f)));
-                table.AddCell(new PdfPCell(new Phrase("Сред. пульс", f)));
-                table.AddCell(new PdfPCell(new Phrase("Макс. пульс", f)));
-                table.AddCell(new PdfPCell(new Phrase("Шаги", f)));
-                table.AddCell(new PdfPCell(new Phrase("Калории", f)));
-                table.AddCell(new PdfPCell(new Phrase("Сред. скорость", f)));
-
-                foreach (var indicator in userIndicators)
-                {
-                    table.AddCell(new PdfPCell( new Phrase(indicator.Date.ToShortDateString(), f)));
-                    table.AddCell(new PdfPCell( new Phrase(indicator.Duration.ToString(), f)));
-                    table.AddCell(new PdfPCell( new Phrase(indicator.MinimumPulse.ToString(), f)));
-                    table.AddCell(new PdfPCell( new Phrase(indicator.AveragePulse.ToString(), f)));
-                    table.AddCell(new PdfPCell( new Phrase(indicator.MaximumPulse.ToString(), f)));
-                    table.AddCell(new PdfPCell( new Phrase(indicator.Steps.ToString(), f)));
-                    table.AddCell(new PdfPCell( new Phrase(indicator.Calories.ToString(), f)));
-                    table.AddCell(new PdfPCell( new Phrase(indicator.AverageSpeed.ToString(), f)));
-                }
-
-                int i = 0;
-                var results = GetIndicatorResults();
-
-                foreach (var indicator in results)
-                {
-                    var newCell = new PdfPCell(new Phrase((i == 0) ? "Min" : (i == 1) ? "Avg" : "Max"));
-                    newCell.Colspan = 2;
-                    table.AddCell(newCell);
-                    table.AddCell("");
-                    table.AddCell(indicator.MinimumPulse.ToString());
-                    table.AddCell(indicator.AveragePulse.ToString());
-                    table.AddCell(indicator.MaximumPulse.ToString());
-                    table.AddCell(indicator.Steps.ToString());
-                    table.AddCell(indicator.Calories.ToString());
-                    table.AddCell(indicator.AverageSpeed.ToString("0.00"));
-
-                    i++;
-                }
-
-                Doc.Add(table);
-                Doc.Close();
-
-                return File(fs.ToArray(), "application/pdf", "ExportData.pdf");
+            if (trainingTemplatesResponse.StatusCode != Enums.StatusCode.OK)
+            { 
+                ModelState.AddModelError("", trainingTemplatesResponse.Description);
+                return RedirectToAction("Index", "Home");
             }
+
+            var trainingTemplates = trainingTemplatesResponse.Data.ToList();
+
+            ViewBag.TrainingTemplateList = new SelectList(trainingTemplates, "Id", "Title");
+
+            return View();
         }
 
-        //[HttpPost]
-        //public FileResult ExportTrainingListPdf(string trainingType)
-        //{
-        //    Document Doc = new Document(PageSize.LETTER);
+        [HttpPost]
+        public async Task<IActionResult> ViewTraining(int id)
+        {
+            var response = await _pdfService.GetCurrentTrainingInformationPdf(id, User.Identity.Name, "TrainingInformation.pdf");
 
-        //    using (var fs = new MemoryStream())
-        //    {
-        //        PdfWriter writer = PdfWriter.GetInstance(Doc, fs);
-        //        Doc.Open();
-        //        Doc.NewPage();
+            if (response.StatusCode != Enums.StatusCode.OK)
+            {
+                ModelState.AddModelError("", response.Description);
+                return RedirectToAction("Index", "Home");
+            }
 
-        //        string ARIALUNI_TFF = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Fonts), "ARIAL.TTF");
+            var information = response.Data;
 
-        //        BaseFont bf = BaseFont.CreateFont(ARIALUNI_TFF, BaseFont.IDENTITY_H, BaseFont.NOT_EMBEDDED);
+            return File(information.Data, information.ContentType, information.FileName);
+        }
 
-        //        Font f = new Font(bf, 12, Font.NORMAL);
+        [HttpGet]
+        public async Task<IActionResult> TotalTrainingInformation()
+        {
+            return View();
+        }
 
-        //        var selectTrainingList = SelectTrainingList(trainingType);
+        [HttpPost]
+        public async Task<IActionResult> TotalTrainingInformation(TimeInterval timeInterval)
+        {
+            var response = await _pdfService.GetTotalTrainingInformationPdf(User.Identity.Name, timeInterval, "TotalTrainingInformation.pdf");
 
-        //        int columnCount = typeof(TrainingViewModel).GetProperties().Length;
-        //        PdfPTable table = new PdfPTable(columnCount);
-        //        PdfPCell cell = new PdfPCell(new Phrase("Список Тренировок"));
-        //        cell.Colspan = columnCount;
+            if (response.StatusCode != Enums.StatusCode.OK)
+            {
+                ModelState.AddModelError("", response.Description);
+                return RedirectToAction("Index", "Home");
+            }
 
-        //        cell.HorizontalAlignment = 1; //0=Left, 1=Centre, 2=Right
-        //        table.AddCell(cell);
+            var result = response.Data;
 
-        //        foreach (var training in selectTrainingList)
-        //        {
-        //            table.AddCell(training.Id.ToString());
-        //            table.AddCell(training.NameType);
-        //            table.AddCell(training.NameTraining);
-        //        }
+            return File(result.Data, result.ContentType, result.FileName);
+        }
 
-        //        Doc.Add(table);
-        //        Doc.Close();
+        [HttpPost]
+        public async Task<IActionResult> ExportIndicatorsPdf(string ExportData)
+        {
+            var userIndicators = await GetUserIndicators();
+            var indicators = await GetIndicatorResults();
 
-        //        return File(fs.ToArray(), "application/pdf", "ExportData.pdf");
-        //    }
-        //}
+            var indicatorPdfResponse = await _pdfService.GetIndicatorsPdf("ExportData.pdf", userIndicators, indicators);
+
+            if (indicatorPdfResponse.StatusCode != Enums.StatusCode.OK)
+            { 
+                ModelState.AddModelError("", indicatorPdfResponse.Description);
+                return RedirectToAction("Index", "Pdf");
+            }
+
+            var indicatorPdf = indicatorPdfResponse.Data;
+
+            return File(indicatorPdf.Data, indicatorPdf.ContentType, indicatorPdf.FileName);
+        }
 
         [NonAction]
-        private List<Indicator> GetUserIndicators()
+        private async Task<List<Indicator>> GetUserIndicators()
         {
-            var userIndicators = _context.Indicators
-                .Where(x => x.UserId == _context.Users.FirstOrDefault(y => y.Login == User.Identity.Name).Id)
+            var user = (await _userService.GetAll()).Data.FirstOrDefault(x => x.Login == User.Identity.Name);
+
+            var userIndicators = (await _indicatorService.GetAll())
+                .Data
+                .Where(x => x.UserId == user.Id)
                 .ToList();
 
             return userIndicators;
         }
 
         [NonAction]
-        private List<IndicatorViewModel> GetIndicatorResults()
+        private async Task<List<IndicatorViewModel>> GetIndicatorResults()
         {
-            var indicators = GetUserIndicators();
+            var indicators = await GetUserIndicators();
 
             var indicatorMinResults = new IndicatorViewModel
             {
@@ -211,7 +153,7 @@ namespace WebRunApplication.Controllers
                 AverageSpeed = indicators.Select(y => y.AverageSpeed).Min()
             };
 
-            var hrvIndicatorAvgResults = new IndicatorViewModel
+            var indicatorAvgResults = new IndicatorViewModel
             {
                 Calories = (uint)indicators.Average(x => x.Calories),
                 Steps = (uint)indicators.Average(x => x.Steps),
@@ -221,7 +163,7 @@ namespace WebRunApplication.Controllers
                 AverageSpeed = indicators.Select(y => y.AverageSpeed).Average()
             };
 
-            var hrvIndicatorMaxResults = new IndicatorViewModel
+            var indicatorMaxResults = new IndicatorViewModel
             {
                 Calories = indicators.Select(y => y.Calories).Max(),
                 Steps = indicators.Select(y => y.Steps).Max(),
@@ -231,14 +173,14 @@ namespace WebRunApplication.Controllers
                 AverageSpeed = indicators.Select(y => y.AverageSpeed).Max()
             };
 
-            var hrvIndicatorsResults = new List<IndicatorViewModel>
+            var indicatorsResults = new List<IndicatorViewModel>
             {
                 indicatorMinResults,
-                hrvIndicatorAvgResults,
-                hrvIndicatorMaxResults
+                indicatorAvgResults,
+                indicatorMaxResults
             };
 
-            return hrvIndicatorsResults;
+            return indicatorsResults;
         }
     }
 }
