@@ -1,0 +1,18 @@
+﻿@using WebRunApplication.DataEntity;
+@model TrainingTemplate
+
+<link rel="stylesheet" href="~/css/CustomStyle.css" />
+
+<body>
+    @using (Html.BeginForm("ViewTraining", "Pdf", FormMethod.Post))
+    {
+        <div class="content">
+            <div class="card">
+                <h3>Виды тренировок: </h3>
+            </div>
+
+            @Html.DropDownListFor(x => x.Id, ViewBag.TrainingTemplateList as SelectList, new {@class = "topics"})
+            <input class="custom_button" type="submit" value="Загрузить PDF файл" />
+        </div>
+    }
+</body>

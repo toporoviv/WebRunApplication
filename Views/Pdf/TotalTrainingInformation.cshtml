@@ -1,0 +1,18 @@
+﻿@using WebRunApplication.DataEntity;
+@model TimeInterval
+
+<link rel="stylesheet" href="~/css/CustomStyle.css" />
+
+<body>
+    <div class="card">
+        <h3>Общее тренировочное время по месяцам: </h3>
+    </div>
+
+    <form autocomplete="on" method="post" asp-controller="Pdf" asp-action="TotalTrainingInformation">
+        <div class = "unifying_div">
+            <input asp-for="Begin" type="date"/>
+            <input asp-for="End" type="date"/>
+        </div>
+         <input asp-controller="Pdf" asp-action="TotalTrainingInformation" class="custom_button" type="submit" value="Загрузить файл" />
+     </form>
+</body>
