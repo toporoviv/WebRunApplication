@@ -109,7 +109,7 @@ namespace WebRunApplication.Services.Implementations
 
                     for (int i = 0; i < data.Count; i++)
                     {
-                        table.AddCell(new PdfPCell(new Phrase(i.ToString(), f)));
+                        table.AddCell(new PdfPCell(new Phrase((i + 1).ToString(), f)));
                         table.AddCell(new PdfPCell(new Phrase(data[i].Title, f)));
                         table.AddCell(new PdfPCell(new Phrase(new Phrase(data[i].Date.ToShortDateString(), f))));
                     }
@@ -299,7 +299,7 @@ namespace WebRunApplication.Services.Implementations
 
                     PdfPTable table = new PdfPTable(2);
 
-                    PdfPCell cell = new PdfPCell(new Phrase("Общее тренировочное время по сборам", f));
+                    PdfPCell cell = new PdfPCell(new Phrase("Общее тренировочное время по месяцам", f));
                     cell.Colspan = 2;
 
                     cell.HorizontalAlignment = 1; //0=Left, 1=Centre, 2=Right
@@ -359,6 +359,62 @@ namespace WebRunApplication.Services.Implementations
                     StatusCode = StatusCode.InternalServerError
                 };
             }
+        }
+
+        public async Task<List<Indicator>> GetUserIndicators(string login)
+        {
+            var user = await _userRepository.GetAll().FirstOrDefaultAsync(x => x.Login == login);
+
+            var userIndicators = _indicatorRepository
+                .GetAll()
+                .Where(x => x.UserId == user.Id)
+                .ToList();
+
+            return userIndicators;
+        }
+
+        public async Task<List<IndicatorViewModel>> GetIndicatorResults(string login)
+        {
+            var indicators = await GetUserIndicators(login);
+
+            var indicatorMinResults = new IndicatorViewModel
+            {
+                Calories = indicators.Select(y => y.Calories).Min(),
+                Steps = indicators.Select(y => y.Steps).Min(),
+                MinimumPulse = indicators.Select(y => y.MinimumPulse).Min(),
+                AveragePulse = indicators.Select(y => y.AveragePulse).Min(),
+                MaximumPulse = indicators.Select(y => y.MaximumPulse).Min(),
+                AverageSpeed = indicators.Select(y => y.AverageSpeed).Min()
+            };
+
+            var indicatorAvgResults = new IndicatorViewModel
+            {
+                Calories = (uint)indicators.Average(x => x.Calories),
+                Steps = (uint)indicators.Average(x => x.Steps),
+                MinimumPulse = (uint)indicators.Average(x => x.MinimumPulse),
+                AveragePulse = (uint)indicators.Average(x => x.AveragePulse),
+                MaximumPulse = (uint)indicators.Average(x => x.MaximumPulse),
+                AverageSpeed = indicators.Select(y => y.AverageSpeed).Average()
+            };
+
+            var indicatorMaxResults = new IndicatorViewModel
+            {
+                Calories = indicators.Select(y => y.Calories).Max(),
+                Steps = indicators.Select(y => y.Steps).Max(),
+                MinimumPulse = indicators.Select(y => y.MinimumPulse).Max(),
+                AveragePulse = indicators.Select(y => y.AveragePulse).Max(),
+                MaximumPulse = indicators.Select(y => y.MaximumPulse).Max(),
+                AverageSpeed = indicators.Select(y => y.AverageSpeed).Max()
+            };
+
+            var indicatorsResults = new List<IndicatorViewModel>
+            {
+                indicatorMinResults,
+                indicatorAvgResults,
+                indicatorMaxResults
+            };
+
+            return indicatorsResults;
         }
     }
 }

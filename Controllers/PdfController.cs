@@ -18,6 +18,7 @@ using WebRunApplication.Models;
 using System.Linq;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using WebRunApplication.Services.Implementations;
 
 namespace WebRunApplication.Controllers
 {
@@ -44,8 +45,8 @@ namespace WebRunApplication.Controllers
         [HttpGet]
         public async Task<IActionResult> Index()
         {
-            ViewBag.UserIndicators = await GetUserIndicators();
-            ViewBag.UserIndicatorsResults = await GetIndicatorResults();
+            ViewBag.UserIndicators = await _pdfService.GetUserIndicators(User.Identity.Name);
+            ViewBag.UserIndicatorsResults = await _pdfService.GetIndicatorResults(User.Identity.Name);
 
             return View();
         }
@@ -109,8 +110,8 @@ namespace WebRunApplication.Controllers
         [HttpPost]
         public async Task<IActionResult> ExportIndicatorsPdf(string ExportData)
         {
-            var userIndicators = await GetUserIndicators();
-            var indicators = await GetIndicatorResults();
+            var userIndicators = await _pdfService.GetUserIndicators(User.Identity.Name);
+            var indicators = await _pdfService.GetIndicatorResults(User.Identity.Name);
 
             var indicatorPdfResponse = await _pdfService.GetIndicatorsPdf("ExportData.pdf", userIndicators, indicators);
 
@@ -123,64 +124,6 @@ namespace WebRunApplication.Controllers
             var indicatorPdf = indicatorPdfResponse.Data;
 
             return File(indicatorPdf.Data, indicatorPdf.ContentType, indicatorPdf.FileName);
-        }
-
-        [NonAction]
-        private async Task<List<Indicator>> GetUserIndicators()
-        {
-            var user = (await _userService.GetAll()).Data.FirstOrDefault(x => x.Login == User.Identity.Name);
-
-            var userIndicators = (await _indicatorService.GetAll())
-                .Data
-                .Where(x => x.UserId == user.Id)
-                .ToList();
-
-            return userIndicators;
-        }
-
-        [NonAction]
-        private async Task<List<IndicatorViewModel>> GetIndicatorResults()
-        {
-            var indicators = await GetUserIndicators();
-
-            var indicatorMinResults = new IndicatorViewModel
-            {
-                Calories = indicators.Select(y => y.Calories).Min(),
-                Steps = indicators.Select(y => y.Steps).Min(),
-                MinimumPulse = indicators.Select(y => y.MinimumPulse).Min(),
-                AveragePulse = indicators.Select(y => y.AveragePulse).Min(),
-                MaximumPulse = indicators.Select(y => y.MaximumPulse).Min(),
-                AverageSpeed = indicators.Select(y => y.AverageSpeed).Min()
-            };
-
-            var indicatorAvgResults = new IndicatorViewModel
-            {
-                Calories = (uint)indicators.Average(x => x.Calories),
-                Steps = (uint)indicators.Average(x => x.Steps),
-                MinimumPulse = (uint)indicators.Average(x => x.MinimumPulse),
-                AveragePulse = (uint)indicators.Average(x => x.AveragePulse),
-                MaximumPulse = (uint)indicators.Average(x => x.MaximumPulse),
-                AverageSpeed = indicators.Select(y => y.AverageSpeed).Average()
-            };
-
-            var indicatorMaxResults = new IndicatorViewModel
-            {
-                Calories = indicators.Select(y => y.Calories).Max(),
-                Steps = indicators.Select(y => y.Steps).Max(),
-                MinimumPulse = indicators.Select(y => y.MinimumPulse).Max(),
-                AveragePulse = indicators.Select(y => y.AveragePulse).Max(),
-                MaximumPulse = indicators.Select(y => y.MaximumPulse).Max(),
-                AverageSpeed = indicators.Select(y => y.AverageSpeed).Max()
-            };
-
-            var indicatorsResults = new List<IndicatorViewModel>
-            {
-                indicatorMinResults,
-                indicatorAvgResults,
-                indicatorMaxResults
-            };
-
-            return indicatorsResults;
         }
     }
 }

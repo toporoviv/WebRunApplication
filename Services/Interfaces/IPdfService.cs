@@ -14,5 +14,9 @@ namespace WebRunApplication.Services.Interfaces
         Task<IBaseResponse<FileResultInformation>> GetCurrentTrainingInformationPdf(int trainingTemplateId, string userLogin, string fileName);
 
         Task<IBaseResponse<FileResultInformation>> GetTotalTrainingInformationPdf(string userLogin, TimeInterval timeInterval, string fileName);
+
+        Task<List<IndicatorViewModel>> GetIndicatorResults(string login);
+
+        Task<List<Indicator>> GetUserIndicators(string login);
     }
 }
