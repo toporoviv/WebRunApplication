@@ -44,6 +44,22 @@
                             <li>
                                 <a class="nav-link text-dark" style="text-align:right" asp-controller="Chart" asp-action="TrainingPieHistogram">Круговая диаграмма</a>
                             </li>
+                            <li>
+                                <a class="nav-link text-dark" style="text-align:right" asp-controller="Chart" asp-action="TotalTrainingTime">Chart3</a>
+                            </li>
+                            <li>
+                                <a class="nav-link text-dark" style="text-align:right" asp-controller="Pdf" asp-action="Index">Pdf1</a>
+                            </li>
+                            <li>
+                                <a class="nav-link text-dark" style="text-align:right" asp-controller="Pdf" asp-action="ViewTraining">Pdf2</a>
+                            </li>
+                            <li>
+                                <a class="nav-link text-dark" style="text-align:right" asp-controller="Pdf" asp-action="TotalTrainingInformation">Pdf3</a>
+                            </li>
+                            <li>
+                                <a class="nav-link text-dark" style="text-align:right" asp-controller="TrainingStatistical" asp-action="Index">****</a>
+                            </li>
+
                             @if (User.IsInRole(WebRunApplication.Enums.Role.Admin.ToString()))
                             {
                                 <li>

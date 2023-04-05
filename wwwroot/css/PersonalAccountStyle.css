@@ -76,7 +76,7 @@
     text-anchor:end;
 }
 
-.custom_table, td{
+.custom_table, td, th{
     border: 1px solid #333;
     border-radius: 15px;
     margin-left:0px;
@@ -87,7 +87,7 @@
     text-align:center;
 }
 
-td {
+td, th {
     border-radius: 15px;
 }
 
