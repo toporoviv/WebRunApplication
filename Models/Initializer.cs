@@ -42,6 +42,7 @@ namespace WebRunApplication.Models
             services.AddScoped<IDataBaseGeneratorService, DataBaseGeneratorService>();
             services.AddScoped<IPdfService, PdfService>();
             services.AddScoped<IIndicatorService, IndicatorService>();
+            services.AddScoped<ITrainingStatisticalService, TrainingStatisticalService>();
         }
     }
 }
