@@ -63,5 +63,82 @@ namespace WebRunApplication.Controllers
             return View();
         }
 
+        [HttpGet]
+        public async Task<IActionResult> Statistical()
+        {
+            var responseMailingCount = await _trainingStatisticalService.GetTotalMailingCountGroupByYearAndMonth(User.Identity.Name);
+
+            if (responseMailingCount.StatusCode != Enums.StatusCode.OK)
+            {
+                ModelState.AddModelError("", responseMailingCount.Description);
+                return View();
+            }
+
+            ViewBag.TotalMailingCount = StatisticalCalculator.GetMovingAverages(responseMailingCount.Data);
+
+            var responseTrainingDuration = await _trainingStatisticalService.GetTotalTrainingDurationGroupByYearAndMonth(User.Identity.Name);
+
+            if (responseTrainingDuration.StatusCode != Enums.StatusCode.OK)
+            {
+                ModelState.AddModelError("", responseTrainingDuration.Description);
+                return View();
+            }
+
+            ViewBag.TotalTrainingDuration = StatisticalCalculator.GetMovingAverages(responseTrainingDuration.Data);
+
+            var responseTrainingCount = await _trainingStatisticalService.GetTotalTrainingCountGroupByYearAndMonth(User.Identity.Name);
+
+            if (responseTrainingCount.StatusCode != Enums.StatusCode.OK)
+            {
+                ModelState.AddModelError("", responseTrainingCount.Description);
+                return View();
+            }
+
+            ViewBag.TotalTrainingCount = StatisticalCalculator.GetMovingAverages(responseTrainingCount.Data);
+
+            return View();
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> StatisticalWithEdgeValues()
+        {
+            var responseMailingCount = await _trainingStatisticalService.GetTotalMailingCountGroupByYearAndMonth(User.Identity.Name);
+
+            if (responseMailingCount.StatusCode != Enums.StatusCode.OK)
+            {
+                ModelState.AddModelError("", responseMailingCount.Description);
+                return View();
+            }
+
+            var totalMailingCountMovingAverages = StatisticalCalculator.GetMovingAveragesWithEdgeValues(responseMailingCount.Data);
+            ViewBag.TotalMailingCount = totalMailingCountMovingAverages;
+            ViewBag.PredictiveValueForTotalMailingCount = StatisticalCalculator.GetPredictiveValueByMovingAverages(totalMailingCountMovingAverages);
+
+            var responseTrainingDuration = await _trainingStatisticalService.GetTotalTrainingDurationGroupByYearAndMonth(User.Identity.Name);
+
+            if (responseTrainingDuration.StatusCode != Enums.StatusCode.OK)
+            {
+                ModelState.AddModelError("", responseTrainingDuration.Description);
+                return View();
+            }
+
+            var totalTrainingDurationMovingAverages = StatisticalCalculator.GetMovingAveragesWithEdgeValues(responseTrainingDuration.Data);
+            ViewBag.TotalTrainingDuration = totalTrainingDurationMovingAverages;
+            ViewBag.PredictiveValueForTotalTrainingDuration = StatisticalCalculator.GetPredictiveValueByMovingAverages(totalTrainingDurationMovingAverages);
+
+            var responseTrainingCount = await _trainingStatisticalService.GetTotalTrainingCountGroupByYearAndMonth(User.Identity.Name);
+
+            if (responseTrainingCount.StatusCode != Enums.StatusCode.OK)
+            {
+                ModelState.AddModelError("", responseTrainingCount.Description);
+                return View();
+            }
+
+            var totalTrainingCountMovingAverages = StatisticalCalculator.GetMovingAveragesWithEdgeValues(responseTrainingCount.Data);
+            ViewBag.TotalTrainingCount = totalTrainingCountMovingAverages;
+            ViewBag.PredictiveValueForTotalTrainingCount = StatisticalCalculator.GetPredictiveValueByMovingAverages(totalTrainingCountMovingAverages);
+
+            return View();
+        }
     }
 }
