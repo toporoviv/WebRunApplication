@@ -172,5 +172,93 @@ namespace WebRunApplication.Services.Implementations
                 };
             }
         }
+
+        public async Task<IBaseResponse<List<double>>> GetTotalMailingCountGroupByYearAndMonth(string login)
+        {
+            try
+            {
+                var user = await _userRepository.GetAll().FirstOrDefaultAsync(x => x.Login == login);
+
+                var data = _mailingRepository.GetAll()
+                .GroupBy(x => new { x.Date.Year, x.Date.Month })
+                .Select(x => (double)x.Count())
+                .ToList();
+
+                return new BaseResponse<List<double>>
+                {
+                    Data = data,
+                    StatusCode = Enums.StatusCode.OK
+                };
+            }
+            catch (Exception exception)
+            {
+                _logger.LogError(exception, $"[{nameof(TrainingStatisticalService)}.{nameof(GetTotalMailingCountGroupByYearAndMonth)}]: {exception.Message}");
+                return new BaseResponse<List<double>>
+                {
+                    Description = exception.Message,
+                    StatusCode = Enums.StatusCode.InternalServerError
+                };
+            }
+        }
+
+        public async Task<IBaseResponse<List<double>>> GetTotalTrainingCountGroupByYearAndMonth(string login)
+        {
+            try
+            {
+                var user = await _userRepository.GetAll().FirstOrDefaultAsync(x => x.Login == login);
+
+                var data = _indicatorRepository.GetAll()
+                    .Where(x => x.UserId == user.Id)
+                    .Join(_trainingRepository.GetAll(), indicator => indicator.Date, training => training.Date, (indicator, training) => training)
+                    .GroupBy(x => new { x.Date.Year, x.Date.Month })
+                    .Select(x => (double)x.Count())
+                    .ToList();
+
+                return new BaseResponse<List<double>>
+                {
+                    Data = data,
+                    StatusCode = Enums.StatusCode.OK
+                };
+            }
+            catch (Exception exception)
+            {
+                _logger.LogError(exception, $"[{nameof(TrainingStatisticalService)}.{nameof(GetTotalTrainingCountGroupByYearAndMonth)}]: {exception.Message}");
+                return new BaseResponse<List<double>>
+                {
+                    Description = exception.Message,
+                    StatusCode = Enums.StatusCode.InternalServerError
+                };
+            }
+        }
+
+        public async Task<IBaseResponse<List<double>>> GetTotalTrainingDurationGroupByYearAndMonth(string login)
+        {
+            try
+            {
+                var user = await _userRepository.GetAll().FirstOrDefaultAsync(x => x.Login == login);
+
+                var data = _indicatorRepository.GetAll().ToList()
+                    .Where(x => x.UserId == user.Id)
+                    .Join(_trainingRepository.GetAll().ToList(), indicator => indicator.Date, training => training.Date, (indicator, training) => training)
+                    .GroupBy(x => new { x.Date.Year, x.Date.Month })
+                    .Select(x => (double)x.Sum(y => (int)y.Duration.TotalMinutes))
+                    .ToList();
+
+                return new BaseResponse<List<double>>
+                {
+                    Data = data,
+                    StatusCode = Enums.StatusCode.OK
+                };
+            }
+            catch (Exception exception)
+            {
+                _logger.LogError(exception, $"[{nameof(TrainingStatisticalService)}.{nameof(GetTotalTrainingDurationGroupByYearAndMonth)}]: {exception.Message}");
+                return new BaseResponse<List<double>>
+                {
+                    Description = exception.Message,
+                    StatusCode = Enums.StatusCode.InternalServerError
+                };
+            }
+        }
     }
 }

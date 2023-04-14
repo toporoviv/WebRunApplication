@@ -12,5 +12,11 @@ namespace WebRunApplication.Services.Interfaces
         Task<IBaseResponse<List<TrainingStatisticalTotalDurationView>>> GetTotalTrainingDayDuration(string login);
 
         Task<IBaseResponse<List<TrainingStatisticalMailingCount>>> GetTotalMailingCount(string login);
+
+        Task<IBaseResponse<List<double>>> GetTotalTrainingDurationGroupByYearAndMonth(string login);
+
+        Task<IBaseResponse<List<double>>> GetTotalTrainingCountGroupByYearAndMonth(string login);
+
+        Task<IBaseResponse<List<double>>> GetTotalMailingCountGroupByYearAndMonth(string login);
     }
 }
