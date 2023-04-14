@@ -1,0 +1,238 @@
+﻿@using System.Globalization
+<link rel="stylesheet" href="~/css/PersonalAccountStyle.css" />
+
+<body>
+
+<div id="chart" ></div>
+
+<table>
+    <tr>
+        <th rowspan = 2 style="text-align: center;">№</th>
+        <th rowspan = 2 style="text-align: center;">Фактическое значение</th>
+        <th colspan = 2 style="text-align: center;">Скользящие средние</th>
+        <th rowspan=2 style="text-align: center;">Взвешенная скользящая средняя l = 5</th>
+              
+        <tr>
+            <th style="text-align: center;">l = 3</th>
+            <th style="text-align: center;">l = 7</th>
+        </tr>
+    <tr>
+    
+    @if (ViewBag.TotalTrainingDuration is not null)
+    {
+        @foreach(var element in ViewBag.TotalTrainingDuration as IEnumerable<MovingAverage>)
+        {
+            <tr>
+                <td style="text-align: center;">@element.Id</td>
+                <td style="text-align: center;">@element.Value</td>
+                <td style="text-align: center;">@(element.L3?.ToString("0.00"))</td>
+                <td style="text-align: center;">@(element.L7?.ToString("0.00"))</td>
+                <td style="text-align: center;">@(element.L5?.ToString("0.00"))</td>
+            </tr>
+        }
+
+        <tr>
+            <td style="text-align: center;">@ViewBag.PredictiveValueForTotalTrainingDuration.Id</td>
+            <td style="text-align: center;">Прогноз</td>
+            <td style="text-align: center;">@ViewBag.PredictiveValueForTotalTrainingDuration.L3.ToString("0.00")</td>
+            <td style="text-align: center;">@ViewBag.PredictiveValueForTotalTrainingDuration.L7.ToString("0.00")</td>
+            <td style="text-align: center;">@ViewBag.PredictiveValueForTotalTrainingDuration.L5.ToString("0.00")</td>
+        </tr>
+    }
+</table>
+
+<div id="chart4"></div>
+
+<table>
+    <tr>
+        <th rowspan = 2 style="text-align: center;">№</th>
+        <th rowspan = 2 style="text-align: center;">Фактическое значение</th>
+        <th colspan = 2 style="text-align: center;">Скользящие средние</th>
+        <th rowspan=2 style="text-align: center;">Взвешенная скользящая средняя l = 5</th>
+              
+        <tr>
+            <th style="text-align: center;">l = 3</th>
+            <th style="text-align: center;">l = 7</th>
+        </tr>
+    </tr>
+    
+    @if (ViewBag.TotalTrainingCount is not null)
+    {
+        @foreach(var element in ViewBag.TotalTrainingCount as IEnumerable<MovingAverage>)
+        {
+            <tr>
+                <td style="text-align: center;">@element.Id</td>
+                <td style="text-align: center;">@element.Value</td>
+                <td style="text-align: center;">@(element.L3?.ToString("0.00"))</td>
+                <td style="text-align: center;">@(element.L7?.ToString("0.00"))</td>
+                <td style="text-align: center;">@(element.L5?.ToString("0.00"))</td>
+            </tr>
+        }
+
+        <tr>
+            <td style="text-align: center;">@ViewBag.PredictiveValueForTotalTrainingCount.Id</td>
+            <td style="text-align: center;">Прогноз</td>
+            <td style="text-align: center;">@ViewBag.PredictiveValueForTotalTrainingCount.L3.ToString("0.00")</td>
+            <td style="text-align: center;">@ViewBag.PredictiveValueForTotalTrainingCount.L7.ToString("0.00")</td>
+            <td style="text-align: center;">@ViewBag.PredictiveValueForTotalTrainingCount.L5.ToString("0.00")</td>
+        </tr>
+    }
+</table>
+
+<div id="chart5"></div>
+
+<table>
+    <tr>
+        <th rowspan = 2 style="text-align: center;">№</th>
+        <th rowspan = 2 style="text-align: center;">Фактическое значение</th>
+        <th colspan = 2 style="text-align: center;">Скользящие средние</th>
+        <th rowspan=2 style="text-align: center;">Взвешенная скользящая средняя l = 5</th>
+              
+        <tr>
+            <th style="text-align: center;">l = 3</th>
+            <th style="text-align: center;">l = 7</th>
+        </tr>
+    </tr>
+    
+    @if (ViewBag.TotalMailingCount is not null)
+    {
+        @foreach(var element in ViewBag.TotalMailingCount as IEnumerable<MovingAverage>)
+        {
+            <tr>
+                <td style="text-align: center;">@element.Id</td>
+                <td style="text-align: center;">@element.Value</td>
+                <td style="text-align: center;">@(element.L3?.ToString("0.00"))</td>
+                <td style="text-align: center;">@(element.L7?.ToString("0.00"))</td>
+                <td style="text-align: center;">@(element.L5?.ToString("0.00"))</td>
+            </tr>
+        }
+
+        <tr>
+            <td style="text-align: center;">@ViewBag.PredictiveValueForTotalMailingCount.Id</td>
+            <td style="text-align: center;">Прогноз</td>
+            <td style="text-align: center;">@ViewBag.PredictiveValueForTotalMailingCount.L3.ToString("0.00")</td>
+            <td style="text-align: center;">@ViewBag.PredictiveValueForTotalMailingCount.L7.ToString("0.00")</td>
+            <td style="text-align: center;">@ViewBag.PredictiveValueForTotalMailingCount.L5.ToString("0.00")</td>
+        </tr>
+    }
+
+</table>
+
+
+<div id="chart6"></div>
+
+</body>
+
+
+@section Scripts
+{
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+        
+    <script type="text/javascript">
+                google.charts.load('current', {
+                    'packages': ['corechart']
+                });
+                google.charts.setOnLoadCallback(drawChart);
+        
+                function drawChart() {
+                    var data = google.visualization.arrayToDataTable([
+                        ['Период', 'Фактические значения', 'l3', 'l7', 'l5'],
+                            
+                        @foreach (var d in ViewBag.TotalTrainingDuration as IEnumerable<MovingAverage>)
+                        {
+                            <text>[@(d.Id.ToString("0.00", CultureInfo.InvariantCulture)),
+                                @(d.Value?.ToString("0.00", CultureInfo.InvariantCulture)),
+                                @((d.L3 is null) ? "undefined" : (d.L3)?.ToString("0.00", CultureInfo.InvariantCulture)),
+                                @((d.L7 is null) ? "undefined" : (d.L7)?.ToString("0.00", CultureInfo.InvariantCulture)),
+                                @((d.L5 is null) ? "undefined" : (d.L5)?.ToString("0.00", CultureInfo.InvariantCulture))],</text>
+                        }                     
+                    ]);
+        
+                    var options = {
+                        title: 'График скользящих средних для общего времени тренировок',
+                        curveType: 'function',
+                        legend: {
+                            position: 'bottom'
+                        },
+                        height: 500,
+                        width: 1200
+                    };
+                    var chart = new google.visualization.LineChart(document.getElementById('chart4'));
+        
+                    chart.draw(data, options);
+                }
+    </script>
+        
+        
+    <script type="text/javascript">
+            google.charts.load('current', {
+                'packages': ['corechart']
+            });
+            google.charts.setOnLoadCallback(drawChart);
+
+            function drawChart() {
+                var data = google.visualization.arrayToDataTable([
+                    ['Период', 'Фактические значения', 'l3', 'l7', 'l5'],
+                        
+                    @foreach (var d in ViewBag.TotalTrainingCount as IEnumerable<MovingAverage>)
+                    {
+                        <text>[@(d.Id.ToString("0.00", CultureInfo.InvariantCulture)),
+                            @(d.Value?.ToString("0.00", CultureInfo.InvariantCulture)),
+                            @((d.L3 is null) ? "undefined" : (d.L3)?.ToString("0.00", CultureInfo.InvariantCulture)),
+                            @((d.L7 is null) ? "undefined" : (d.L7)?.ToString("0.00", CultureInfo.InvariantCulture)),
+                            @((d.L5 is null) ? "undefined" : (d.L5)?.ToString("0.00", CultureInfo.InvariantCulture))],</text>
+                    }       
+                ]);
+
+                var options = {
+                    title: 'График скользящих средних для количества тренировок',
+                    curveType: 'function',
+                    legend: {
+                        position: 'bottom'
+                    },
+                    height: 500,
+                    width: 1200
+                };
+                var chart = new google.visualization.LineChart(document.getElementById('chart5'));
+
+                chart.draw(data, options);
+            }
+        </script>
+        
+    <script type="text/javascript">
+            google.charts.load('current', {
+                'packages': ['corechart']
+            });
+            google.charts.setOnLoadCallback(drawChart);
+    
+            function drawChart() {
+                var data = google.visualization.arrayToDataTable([
+                    ['№', 'Фактические значения', 'l3', 'l7', 'l5'],
+                        
+                    @foreach (var d in ViewBag.TotalMailingCount as IEnumerable<MovingAverage>)
+                    {
+                        <text>[@(d.Id.ToString("0.00", CultureInfo.InvariantCulture)),
+                            @(d.Value?.ToString("0.00", CultureInfo.InvariantCulture)),
+                            @((d.L3 is null) ? "undefined" : (d.L3)?.ToString("0.00", CultureInfo.InvariantCulture)),
+                            @((d.L7 is null) ? "undefined" : (d.L7)?.ToString("0.00", CultureInfo.InvariantCulture)),
+                            @((d.L5 is null) ? "undefined" : (d.L5)?.ToString("0.00", CultureInfo.InvariantCulture))],</text>
+                    } 
+                ]);
+    
+                var options = {
+                    title: 'График скользящих средних для количества рассылок по месяцам',
+                    curveType: 'function',
+                    legend: {
+                        position: 'bottom'
+                    },
+                    height: 500,
+                    width: 1200
+                };
+                var chart = new google.visualization.LineChart(document.getElementById('chart6'));
+    
+                chart.draw(data, options);
+                    
+            }
+    </script>
+
+}
