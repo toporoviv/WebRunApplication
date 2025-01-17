@@ -1,9 +1,9 @@
-using WebRunApplication.DataEntity;
+using WebRunApplication.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
-using WebRunApplication.Models;
+using WebRunApplication.Domain.Enums.Models;
 using Microsoft.AspNetCore.Authentication.Cookies;
 
-namespace WebRunApplication
+namespace WebRunApplication.Domain.Enums
 {
     public class Program
     {

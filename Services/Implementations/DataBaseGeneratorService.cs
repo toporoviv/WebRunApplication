@@ -1,12 +1,10 @@
-﻿using WebRunApplication.DAL.Interfaces;
-using WebRunApplication.DataEntity;
-using WebRunApplication.DataEntity.Forum;
-using WebRunApplication.Enums;
-using WebRunApplication.Interfaces;
-using WebRunApplication.Response;
-using WebRunApplication.Services.Interfaces;
+﻿using WebRunApplication.Domain.Enums.DAL.Interfaces;
+using WebRunApplication.Domain.Entities;
+using WebRunApplication.Domain.Enums.Interfaces;
+using WebRunApplication.Domain.Enums.Response;
+using WebRunApplication.Domain.Enums.Services.Interfaces;
 
-namespace WebRunApplication.Services.Implementations
+namespace WebRunApplication.Domain.Enums.Services.Implementations
 {
     public class DataBaseGeneratorService : IDataBaseGeneratorService
     {
@@ -39,11 +37,11 @@ namespace WebRunApplication.Services.Implementations
 
                 var random = new Random();
 
-                for (int i = 0; i < 200; i++)
+                for (var i = 0; i < 200; i++)
                 {
                     var indicator = new Indicator
                     {
-                        UserId = (uint)random.Next(1, usersCount + 1),
+                        UserId = random.Next(1, usersCount + 1),
                         Date = new DateTime(random.Next(2022, 2024), random.Next(1, 13), random.Next(1, 28)),
                         Pressure = null,
                         Calories = (uint)random.Next(200, 1001),
@@ -57,7 +55,7 @@ namespace WebRunApplication.Services.Implementations
                     var training = new Training
                     {
                         Date = indicator.Date,
-                        TrainTemplateId = (uint)random.Next(1, trainingTemplateCount + 1),
+                        TrainTemplateId = random.Next(1, trainingTemplateCount + 1),
                         Duration = new TimeSpan(random.Next(0, 1), random.Next(1, 60), random.Next(1, 60))
                     };
 

@@ -1,10 +1,11 @@
-﻿using WebRunApplication.DataEntity;
-using WebRunApplication.DataEntity.Forum;
+﻿using WebRunApplication.Domain.Entities;
+using WebRunApplication.Domain.Entities.Forum;
 
-namespace WebRunApplication.Models
+namespace WebRunApplication.Domain.Enums.Models
 {
     public static class DataBaseGenerator
     {
+        // todo: переписать через фейкер/сделать строителей
         public static List<User> GenerateUsers()
         {
             return new List<User>
@@ -15,9 +16,10 @@ namespace WebRunApplication.Models
                     Password = "1021971",
                     Fullname = "Степан Столяров",
                     Age = 51,
-                    Gender = Enums.Gender.Male,
+                    Gender = Gender.Male,
                     Weight = 61,
-                    Height = 129
+                    Height = 129,
+                    Role = Role.User
                 },
                 new User
                 {
@@ -25,10 +27,11 @@ namespace WebRunApplication.Models
                     Password = "402002",
                     Fullname = "Нина Митрофанова",
                     Age = 20,
-                    Gender = Enums.Gender.Female,
+                    Gender = Gender.Female,
                     Weight = 110,
                     Height = 152,
-                    Email = "gurkinada2003@mail.ru"
+                    Email = "gurkinada2003@mail.ru",
+                    Role = Role.User
                 },
                 new User
                 {
@@ -36,11 +39,11 @@ namespace WebRunApplication.Models
                     Password = "681988",
                     Fullname = "Леонид Долгов",
                     Age = 34,
-                    Gender = Enums.Gender.Male,
+                    Gender = Gender.Male,
                     Weight = 67,
                     Height = 177,
                     Email = "ya.toporow@gmail.com",
-                    Role = Enums.Role.Admin
+                    Role = Role.Admin
                 },
                 new User
                 {
@@ -48,9 +51,10 @@ namespace WebRunApplication.Models
                     Password = "1021971",
                     Fullname = "Таисия Позднякова",
                     Age = 51,
-                    Gender = Enums.Gender.Female,
+                    Gender = Gender.Female,
                     Weight = 101,
-                    Height = 112
+                    Height = 112,
+                    Role = Role.User
                 },
                 new User
                 {
@@ -58,9 +62,10 @@ namespace WebRunApplication.Models
                     Password = "1081968",
                     Fullname = "Евдокия Шевелева",
                     Age = 54,
-                    Gender = Enums.Gender.Female,
+                    Gender = Gender.Female,
                     Weight = 119,
-                    Height = 154
+                    Height = 154,
+                    Role = Role.User
                 },
                 new User
                 {
@@ -68,9 +73,10 @@ namespace WebRunApplication.Models
                     Password = "721986",
                     Fullname = "Валерия Яшина",
                     Age = 36,
-                    Gender = Enums.Gender.Female,
+                    Gender = Gender.Female,
                     Weight = 67,
-                    Height = 195
+                    Height = 195,
+                    Role = Role.User
                 },
                 new User
                 {
@@ -78,9 +84,10 @@ namespace WebRunApplication.Models
                     Password = "941975",
                     Fullname = "Олег Поляков",
                     Age = 47,
-                    Gender = Enums.Gender.Male,
+                    Gender = Gender.Male,
                     Weight = 93,
-                    Height = 142
+                    Height = 142,
+                    Role = Role.User
                 },
                 new User
                 {
@@ -88,9 +95,10 @@ namespace WebRunApplication.Models
                     Password = "1161964",
                     Fullname = "Сергей Стариков",
                     Age = 58,
-                    Gender = Enums.Gender.Male,
+                    Gender = Gender.Male,
                     Weight = 78,
-                    Height = 176
+                    Height = 176,
+                    Role = Role.User
                 },
                 new User
                 {
@@ -98,9 +106,10 @@ namespace WebRunApplication.Models
                     Password = "881978",
                     Fullname = "Антон Бондарев",
                     Age = 44,
-                    Gender = Enums.Gender.Male,
+                    Gender = Gender.Male,
                     Weight = 83,
-                    Height = 159
+                    Height = 159,
+                    Role = Role.User
                 },
                 new User
                 {
@@ -108,9 +117,10 @@ namespace WebRunApplication.Models
                     Password = "961974",
                     Fullname = "Станислав Лаврентьев",
                     Age = 48,
-                    Gender = Enums.Gender.Male,
+                    Gender = Gender.Male,
                     Weight = 123,
-                    Height = 174
+                    Height = 174,
+                    Role = Role.User
                 }
             };
         }
@@ -423,9 +433,9 @@ namespace WebRunApplication.Models
         {
             var list = new List<MailingTopicSubscriber>();
 
-            int count = GenerateUsers().Count;
+            var count = GenerateUsers().Count;
 
-            for (uint i = 1; i <= count; i++)
+            for (var i = 1; i <= count; i++)
             {
                 list.Add(new MailingTopicSubscriber { MailingTopicId = 1, UserId = i });
             }

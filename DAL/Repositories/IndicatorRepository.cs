@@ -1,7 +1,7 @@
-﻿using WebRunApplication.DAL.Interfaces;
-using WebRunApplication.DataEntity;
+﻿using WebRunApplication.Domain.Enums.DAL.Interfaces;
+using WebRunApplication.Domain.Entities;
 
-namespace WebRunApplication.DAL.Repositories
+namespace WebRunApplication.Domain.Enums.DAL.Repositories
 {
     public class IndicatorRepository : IBaseRepository<Indicator>
     {

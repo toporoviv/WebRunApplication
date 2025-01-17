@@ -1,14 +1,11 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Internal;
-using WebRunApplication.DataEntity;
-using WebRunApplication.DataEntity.Forum;
-using WebRunApplication.Models;
+using WebRunApplication.Domain.Entities;
+using WebRunApplication.Domain.Entities.Forum;
+using WebRunApplication.Domain.Enums.Models;
 
-namespace WebRunApplication.Controllers
+namespace WebRunApplication.Domain.Enums.Controllers
 {
     public class ForumController : Controller
     {
@@ -30,6 +27,7 @@ namespace WebRunApplication.Controllers
         [NonAction]
         private async Task<List<MessageViewModel>> GetForumMessages()
         {
+            // todo: тут надо сделать проверку на null (не факт, что одну...)
             var list = _context.ForumMessages.Select(x => new MessageViewModel
             {
                 Id = x.Id,
@@ -61,17 +59,21 @@ namespace WebRunApplication.Controllers
 
         [NonAction]
         private List<MessageViewModel> GetMessages
-            (
-                List<MessageViewModel> result,
-                List<MessageViewModel> messageViewModels,
-                MessageViewModel currentMessage,
-                uint currentLevel
-            )
+        (
+            List<MessageViewModel> result,
+            List<MessageViewModel> messageViewModels,
+            MessageViewModel currentMessage,
+            uint currentLevel
+        )
         {
             currentMessage.NestingLevel = currentLevel;
             result.Add(currentMessage);
-            var list = messageViewModels.Where(m => m.ParentId == currentMessage.Id).OrderByDescending(x => x.Date).ToList();
-            for (int i = 0; i < list.Count; i++)
+            var list = messageViewModels
+                .Where(m => m.ParentId == currentMessage.Id)
+                .OrderByDescending(x => x.Date)
+                .ToList();
+            
+            for (var i = 0; i < list.Count; i++)
             {
                 result = GetMessages(result, messageViewModels, list[i], currentLevel + 1);
             }
@@ -84,6 +86,8 @@ namespace WebRunApplication.Controllers
         //[NonAction]
         public async Task<IActionResult> Send(string message)
         {
+            // todo: User.Identity может ли быть null в данном случае?
+            // todo: user может быть null
             var user = await _context.Users.FirstOrDefaultAsync(x => x.Login == User.Identity.Name);
 
             _context.ForumMessages.Add(new ForumMessage { Date = DateTime.Now, UserId = user.Id, Message = message, ParentId = null });
@@ -93,9 +97,10 @@ namespace WebRunApplication.Controllers
         }
 
         [HttpPost, Authorize]
-        public async Task<IActionResult> MessageReaction(uint messageId, bool isLike)
+        public async Task<IActionResult> MessageReaction(int messageId, bool isLike)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(x => x.Login == User.Identity.Name);
+            // todo: user может быть null
+            var user = await _context.Users.FirstOrDefaultAsync(x => x.Login == User.Identity!.Name);
 
             var reaction = await _context.ForumReactions
                 .FirstOrDefaultAsync(x => x.MessageId == messageId);
@@ -105,7 +110,7 @@ namespace WebRunApplication.Controllers
                 if (reaction.IsLike != isLike)
                 {
                     _context.ForumReactions.Remove(reaction);
-                    await _context.ForumReactions.AddAsync(new ForumReaction()
+                    await _context.ForumReactions.AddAsync(new ForumReaction
                     {
                         MessageId = messageId,
                         UserId = user.Id,
@@ -133,15 +138,16 @@ namespace WebRunApplication.Controllers
         }
 
         [HttpPost, Authorize]
-
-        public async Task<IActionResult> SendComment(uint messageId, string message)
+        public async Task<IActionResult> SendComment(int messageId, string message)
         {
-            if (string.IsNullOrEmpty(message))
+            if (string.IsNullOrWhiteSpace(message))
             {
+                // todo: тут нужно выкинуть exception 
                 message = " ";
             }
 
-            var user = await _context.Users.FirstOrDefaultAsync(x => x.Login == User.Identity.Name);
+            // todo: user может быть null
+            var user = await _context.Users.FirstOrDefaultAsync(x => x.Login == User.Identity!.Name);
 
             await _context.ForumMessages.AddAsync(new ForumMessage 
             {

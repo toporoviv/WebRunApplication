@@ -1,6 +1,6 @@
-﻿using WebRunApplication.DataEntity.Forum;
+﻿using WebRunApplication.Domain.Entities.Forum;
 
-namespace WebRunApplication.Services.Interfaces
+namespace WebRunApplication.Domain.Enums.Services.Interfaces
 {
     public interface IForumReactionService : IBaseService<ForumReaction>
     {

@@ -1,32 +1,18 @@
-﻿using iTextSharp.text.pdf;
-using iTextSharp.text;
-using iTextSharp.tool.xml;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using WebRunApplication.DataEntity;
-using WebRunApplication.Services.Interfaces;
-using System.Text;
-using iTextSharp.text.html.simpleparser;
-using iTextSharp.text.html;
-using Microsoft.AspNetCore.Components.Web;
-using System.Xml;
-using System.IO;
-using System.Web;
-using Org.Apache.Http.Protocol;
-using Android.Content;
-using WebRunApplication.Models;
-using System.Linq;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using WebRunApplication.Services.Implementations;
+using WebRunApplication.Domain.Enums.Models;
+using WebRunApplication.Domain.Enums.Services.Interfaces;
 
-namespace WebRunApplication.Controllers
+namespace WebRunApplication.Domain.Enums.Controllers
 {
     [Authorize]
     public class PdfController : Controller
     {
         private readonly IPdfService _pdfService;
         private readonly ITrainingTemplateService _trainingTemplateService;
+        
+        // todo: сервисы не используются
         private readonly IUserService _userService;
         private readonly IIndicatorService _indicatorService;
 
@@ -45,8 +31,8 @@ namespace WebRunApplication.Controllers
         [HttpGet]
         public async Task<IActionResult> Index()
         {
-            ViewBag.UserIndicators = await _pdfService.GetUserIndicators(User.Identity.Name);
-            ViewBag.UserIndicatorsResults = await _pdfService.GetIndicatorResults(User.Identity.Name);
+            ViewBag.UserIndicators = await _pdfService.GetUserIndicators(User.Identity!.Name!);
+            ViewBag.UserIndicatorsResults = await _pdfService.GetIndicatorResults(User.Identity!.Name!);
 
             return View();
         }
@@ -56,7 +42,7 @@ namespace WebRunApplication.Controllers
         {
             var trainingTemplatesResponse = await _trainingTemplateService.GetAll();
 
-            if (trainingTemplatesResponse.StatusCode != Enums.StatusCode.OK)
+            if (trainingTemplatesResponse.StatusCode != Domain.Enums.StatusCode.OK)
             { 
                 ModelState.AddModelError("", trainingTemplatesResponse.Description);
                 return RedirectToAction("Index", "Home");
@@ -72,9 +58,9 @@ namespace WebRunApplication.Controllers
         [HttpPost]
         public async Task<IActionResult> ViewTraining(int id)
         {
-            var response = await _pdfService.GetCurrentTrainingInformationPdf(id, User.Identity.Name, "TrainingInformation.pdf");
+            var response = await _pdfService.GetCurrentTrainingInformationPdf(id, User.Identity!.Name!, "TrainingInformation.pdf");
 
-            if (response.StatusCode != Enums.StatusCode.OK)
+            if (response.StatusCode != Domain.Enums.StatusCode.OK)
             {
                 ModelState.AddModelError("", response.Description);
                 return RedirectToAction("Index", "Home");
@@ -86,7 +72,7 @@ namespace WebRunApplication.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> TotalTrainingInformation()
+        public IActionResult TotalTrainingInformation()
         {
             return View();
         }
@@ -94,9 +80,12 @@ namespace WebRunApplication.Controllers
         [HttpPost]
         public async Task<IActionResult> TotalTrainingInformation(TimeInterval timeInterval)
         {
-            var response = await _pdfService.GetTotalTrainingInformationPdf(User.Identity.Name, timeInterval, "TotalTrainingInformation.pdf");
+            var response = await _pdfService.GetTotalTrainingInformationPdf(
+                User.Identity!.Name!, 
+                timeInterval, "TotalTrainingInformation.pdf"
+            );
 
-            if (response.StatusCode != Enums.StatusCode.OK)
+            if (response.StatusCode != Domain.Enums.StatusCode.OK)
             {
                 ModelState.AddModelError("", response.Description);
                 return RedirectToAction("Index", "Home");
@@ -107,15 +96,20 @@ namespace WebRunApplication.Controllers
             return File(result.Data, result.ContentType, result.FileName);
         }
 
+        // todo: параметр не используется
         [HttpPost]
         public async Task<IActionResult> ExportIndicatorsPdf(string ExportData)
         {
-            var userIndicators = await _pdfService.GetUserIndicators(User.Identity.Name);
-            var indicators = await _pdfService.GetIndicatorResults(User.Identity.Name);
+            var userIndicators = await _pdfService.GetUserIndicators(User.Identity!.Name!);
+            var indicators = await _pdfService.GetIndicatorResults(User.Identity!.Name!);
 
-            var indicatorPdfResponse = await _pdfService.GetIndicatorsPdf("ExportData.pdf", userIndicators, indicators);
+            var indicatorPdfResponse = await _pdfService.GetIndicatorsPdf(
+                "ExportData.pdf",
+                userIndicators,
+                indicators
+            );
 
-            if (indicatorPdfResponse.StatusCode != Enums.StatusCode.OK)
+            if (indicatorPdfResponse.StatusCode != Domain.Enums.StatusCode.OK)
             { 
                 ModelState.AddModelError("", indicatorPdfResponse.Description);
                 return RedirectToAction("Index", "Pdf");

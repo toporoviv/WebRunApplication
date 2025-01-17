@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using WebRunApplication.DataEntity;
+using WebRunApplication.Domain.Entities;
 
-namespace WebRunApplication.Models
+namespace WebRunApplication.Domain.Enums.Models
 {
     public class AuthorizationModel
     {

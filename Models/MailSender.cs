@@ -3,7 +3,7 @@ using System.Net.Http;
 using System.Net.Mail;
 using System.Text;
 
-namespace WebRunApplication.Models
+namespace WebRunApplication.Domain.Enums.Models
 {
     public class MailSender
     {

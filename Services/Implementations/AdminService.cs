@@ -1,14 +1,14 @@
-﻿using Android.Content;
-using Microsoft.EntityFrameworkCore;
-using WebRunApplication.DAL.Interfaces;
-using WebRunApplication.DataEntity;
-using WebRunApplication.Interfaces;
-using WebRunApplication.Models;
-using WebRunApplication.Response;
-using WebRunApplication.Services.Interfaces;
+﻿using Microsoft.EntityFrameworkCore;
+using WebRunApplication.Domain.Enums.DAL.Interfaces;
+using WebRunApplication.Domain.Entities;
+using WebRunApplication.Domain.Enums.Interfaces;
+using WebRunApplication.Domain.Enums.Models;
+using WebRunApplication.Domain.Enums.Response;
+using WebRunApplication.Domain.Enums.Services.Interfaces;
 
-namespace WebRunApplication.Services.Implementations
+namespace WebRunApplication.Domain.Enums.Services.Implementations
 {
+    // todo: все асинхронные методы должны заканчиваться на Async и иметь в параметрах CancellationToken
     public class AdminService : IAdminService
     {
         private readonly IBaseRepository<User> _userRepository;
@@ -18,10 +18,15 @@ namespace WebRunApplication.Services.Implementations
         private readonly IBaseRepository<Help> _helpRepository;
         private readonly ILogger<AdminService> _logger;
 
-        public AdminService(
-            IBaseRepository<Help> helpRepository, IBaseRepository<User> userRepository,
-            ILogger<AdminService> logger, IBaseRepository<MailingTopic> mailingTopicRepository,
-            IBaseRepository<Mailing> mailingRepository, IBaseRepository<MailingTopicSubscriber> mailingTopicSubscriberRepository)
+        public AdminService
+        (
+            IBaseRepository<Help> helpRepository, 
+            IBaseRepository<User> userRepository,
+            ILogger<AdminService> logger, 
+            IBaseRepository<MailingTopic> mailingTopicRepository,
+            IBaseRepository<Mailing> mailingRepository, 
+            IBaseRepository<MailingTopicSubscriber> mailingTopicSubscriberRepository
+        )
         {
             _helpRepository = helpRepository;
             _logger = logger;
@@ -35,6 +40,7 @@ namespace WebRunApplication.Services.Implementations
         {
             try
             {
+                // todo: model может быть null
                 var model = await _helpRepository.GetAll().FirstOrDefaultAsync(help => help.Id == id);
                 model.Answer = answer;
 
@@ -43,7 +49,7 @@ namespace WebRunApplication.Services.Implementations
                     return new BaseResponse<bool>
                     {
                         Description = "Данной записи не существует",
-                        StatusCode = Enums.StatusCode.NotFound
+                        StatusCode = Domain.Enums.StatusCode.NotFound
                     };
                 }
 
@@ -54,31 +60,35 @@ namespace WebRunApplication.Services.Implementations
                     return new BaseResponse<bool>
                     {
                         Description = "Данный пользователь не найден",
-                        StatusCode = Enums.StatusCode.NotFound
+                        StatusCode = Domain.Enums.StatusCode.NotFound
                     };
                 }
 
-                if (string.IsNullOrEmpty(user.Email))
+                if (string.IsNullOrWhiteSpace(user.Email))
                 {
                     return new BaseResponse<bool>
                     {
                         Description = "У пользователя не задан Email",
-                        StatusCode = Enums.StatusCode.NotFound
+                        StatusCode = Domain.Enums.StatusCode.NotFound
                     };
                 }
 
                 var userEmail = user.Email;
 
+                // todo: в конфиг
                 var sender = new MailSender("runapp90@mail.ru", userEmail, "RunApp");
 
-                await sender.Send("Ответ на вопрос", $"Администратор дал ответ на ваш вопрос.\nВопрос: {model.Question}\nОтвет: {model.Answer}");
+                await sender.Send(
+                    "Ответ на вопрос",
+                    $"Администратор дал ответ на ваш вопрос.\nВопрос: {model.Question}\nОтвет: {model.Answer}"
+                );
 
-                _helpRepository.Update(model);
+                await _helpRepository.Update(model);
 
                 return new BaseResponse<bool>
                 {
                     Data = true,
-                    StatusCode = Enums.StatusCode.OK
+                    StatusCode = Domain.Enums.StatusCode.OK
                 };
             }
             catch(Exception exception)
@@ -87,7 +97,7 @@ namespace WebRunApplication.Services.Implementations
                 return new BaseResponse<bool>
                 {
                     Description = exception.Message,
-                    StatusCode = Enums.StatusCode.InternalServerError
+                    StatusCode = Domain.Enums.StatusCode.InternalServerError
                 };
             }
         }
@@ -96,6 +106,7 @@ namespace WebRunApplication.Services.Implementations
         {
             try
             {
+                // todo: userFIO может выбить ошибку, нужно обработать случай когда user == null
                 var list = _helpRepository
                     .GetAll()
                     .Select(help => new HelpViewModel
@@ -106,8 +117,8 @@ namespace WebRunApplication.Services.Implementations
                         Date = help.Date,
                         Id = help.Id,
                         UserFIO = _userRepository
-                        .GetAll()
-                        .FirstOrDefault(user => user.Id == help.UserId)
+                            .GetAll()
+                            .FirstOrDefault(user => user.Id == help.UserId)
                         .Fullname
                     })
                     .OrderBy(x => x.Answer == null)
@@ -116,7 +127,7 @@ namespace WebRunApplication.Services.Implementations
                 return new BaseResponse<List<HelpViewModel>>
                 {
                     Data = list,
-                    StatusCode = Enums.StatusCode.OK
+                    StatusCode = Domain.Enums.StatusCode.OK
                 };
             }
             catch(Exception exception)
@@ -125,7 +136,7 @@ namespace WebRunApplication.Services.Implementations
                 return new BaseResponse<List<HelpViewModel>>
                 {
                     Description = exception.Message,
-                    StatusCode = Enums.StatusCode.InternalServerError
+                    StatusCode = Domain.Enums.StatusCode.InternalServerError
                 };
             }
         }
@@ -134,21 +145,33 @@ namespace WebRunApplication.Services.Implementations
         {
             try
             {
+                
                 var dict = _mailingTopicRepository
                     .GetAll()
                     .Select(t => new
                     {
                         Title = t.Title,
-                        SubscribeCount = _mailingRepository.GetAll().Count(x => x.MailingTopicId == t.Id),
-                        UserCount = _mailingTopicSubscriberRepository.GetAll().Where(x => x.MailingTopicId == t.Id).Count(),
-                        Subscribers = _mailingTopicSubscriberRepository.GetAll().Where(x => x.MailingTopicId == t.Id).GroupBy(x => x.UserId).Count()
+                        SubscribeCount = _mailingRepository
+                            .GetAll()
+                            .Count(x => x.MailingTopicId == t.Id),
+                        UserCount = _mailingTopicSubscriberRepository
+                            .GetAll()
+                            .Count(x => x.MailingTopicId == t.Id),
+                        Subscribers = _mailingTopicSubscriberRepository
+                            .GetAll()
+                            .Where(x => x.MailingTopicId == t.Id)
+                            .GroupBy(x => x.UserId)
+                            .Count()
                     })
-                    .ToDictionary(x => x.Title, x => (x.SubscribeCount, x.UserCount * x.SubscribeCount, x.Subscribers));
+                    .ToDictionary(
+                        x => x.Title, 
+                        x => (x.SubscribeCount, x.UserCount * x.SubscribeCount, x.Subscribers)
+                    );
 
                 return new BaseResponse<Dictionary<string, (int, int, int)>>
                 {
                     Data = dict,
-                    StatusCode = Enums.StatusCode.OK
+                    StatusCode = Domain.Enums.StatusCode.OK
                 };
             }
             catch(Exception exception)
@@ -157,7 +180,7 @@ namespace WebRunApplication.Services.Implementations
                 return new BaseResponse<Dictionary<string, (int, int, int)>>
                 {
                     Description = exception.Message,
-                    StatusCode = Enums.StatusCode.InternalServerError
+                    StatusCode = Domain.Enums.StatusCode.InternalServerError
                 };
             }
         }

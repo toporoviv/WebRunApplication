@@ -1,13 +1,11 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using WebRunApplication.DAL.Interfaces;
-using WebRunApplication.DAL.Repositories;
-using WebRunApplication.DataEntity;
-using WebRunApplication.Enums;
-using WebRunApplication.Interfaces;
-using WebRunApplication.Response;
-using WebRunApplication.Services.Interfaces;
+using WebRunApplication.Domain.Enums.DAL.Interfaces;
+using WebRunApplication.Domain.Entities;
+using WebRunApplication.Domain.Enums.Interfaces;
+using WebRunApplication.Domain.Enums.Response;
+using WebRunApplication.Domain.Enums.Services.Interfaces;
 
-namespace WebRunApplication.Services.Implementations
+namespace WebRunApplication.Domain.Enums.Services.Implementations
 {
     public class MailingTopicSubscriberService : IMailingTopicSubscriberService
     {

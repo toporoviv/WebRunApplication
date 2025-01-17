@@ -1,8 +1,8 @@
-﻿using WebRunApplication.DAL.Interfaces;
-using WebRunApplication.DataEntity;
-using WebRunApplication.DataEntity.Forum;
+﻿using WebRunApplication.Domain.Entities;
+using WebRunApplication.Domain.Enums.DAL.Interfaces;
+using WebRunApplication.Domain.Entities.Forum;
 
-namespace WebRunApplication.DAL.Repositories
+namespace WebRunApplication.Domain.Enums.DAL.Repositories
 {
     public class ForumReactionRepository: IBaseRepository<ForumReaction>
     {

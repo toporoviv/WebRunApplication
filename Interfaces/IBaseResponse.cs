@@ -1,6 +1,6 @@
-﻿using WebRunApplication.Enums;
+﻿using WebRunApplication.Domain.Enums;
 
-namespace WebRunApplication.Interfaces
+namespace WebRunApplication.Domain.Enums.Interfaces
 {
     public interface IBaseResponse<T>
     {

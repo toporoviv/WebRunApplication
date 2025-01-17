@@ -1,16 +1,14 @@
 ﻿using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
-using WebRunApplication.Models;
-using WebRunApplication.DataEntity;
-using WebRunApplication.Exceptions;
-using System.Diagnostics.CodeAnalysis;
-using WebRunApplication.Services.Interfaces;
+using WebRunApplication.Domain.Enums.Models;
+using WebRunApplication.Domain.Enums.Services.Interfaces;
 
-namespace WebRunApplication.Controllers
+namespace WebRunApplication.Domain.Enums.Controllers
 {
+    
+    // todo: пересмотреть логику контроллера
     public class AccountController : Controller
     {
         private readonly IAccountService _accountService;
@@ -32,7 +30,7 @@ namespace WebRunApplication.Controllers
             if (ModelState.IsValid)
             {
                 var response = await _accountService.Login(model);
-                if (response.StatusCode == Enums.StatusCode.OK)
+                if (response.StatusCode == Domain.Enums.StatusCode.OK)
                 {
                     await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme,
                         new ClaimsPrincipal(response.Data));
@@ -58,11 +56,12 @@ namespace WebRunApplication.Controllers
             if (ModelState.IsValid)
             {
                 var response = await _accountService.Register(model);
-                if (response.StatusCode == Enums.StatusCode.OK)
+                if (response.StatusCode == Domain.Enums.StatusCode.OK)
                 {
                     await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme,
                         new ClaimsPrincipal(response.Data));
 
+                    // todo: вынести почту в конфиг
                     var sender = new MailSender("runapp90@mail.ru", model.Email, "RunApp");
 
                     await sender.Send("Регистрация", "Поздравляем вас с успешной регистрацией");

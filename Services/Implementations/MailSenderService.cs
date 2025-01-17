@@ -1,11 +1,11 @@
-﻿using WebRunApplication.DAL.Interfaces;
-using WebRunApplication.DataEntity;
-using WebRunApplication.Interfaces;
-using WebRunApplication.Models;
-using WebRunApplication.Response;
-using WebRunApplication.Services.Interfaces;
+﻿using WebRunApplication.Domain.Enums.DAL.Interfaces;
+using WebRunApplication.Domain.Entities;
+using WebRunApplication.Domain.Enums.Interfaces;
+using WebRunApplication.Domain.Enums.Models;
+using WebRunApplication.Domain.Enums.Response;
+using WebRunApplication.Domain.Enums.Services.Interfaces;
 
-namespace WebRunApplication.Services.Implementations
+namespace WebRunApplication.Domain.Enums.Services.Implementations
 {
     public class MailSenderService : IMailSenderService
     {
@@ -22,16 +22,22 @@ namespace WebRunApplication.Services.Implementations
         {
             try
             {
+                // todo: нужно вынести в конфиг почту
                 var mailSender = new MailSender("runapp90@mail.ru", emailTo, "RunApp");
 
                 await mailSender.Send(topic, message);
 
-                await _helpRepository.Create(new Help { Date = DateTime.Now, UserId = userId, Question = message });
+                await _helpRepository.Create(new Help
+                {
+                    Date = DateTime.Now,
+                    UserId = (int)userId,
+                    Question = message
+                });
 
                 return new BaseResponse<bool>
                 {
                     Data = true,
-                    StatusCode = Enums.StatusCode.OK
+                    StatusCode = Domain.Enums.StatusCode.OK
                 };
             }
             catch(Exception exception)
@@ -40,7 +46,7 @@ namespace WebRunApplication.Services.Implementations
                 return new BaseResponse<bool>
                 {
                     Description = exception.Message,
-                    StatusCode = Enums.StatusCode.InternalServerError
+                    StatusCode = Domain.Enums.StatusCode.InternalServerError
                 };
             }
         }

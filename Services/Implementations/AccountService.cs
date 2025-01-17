@@ -1,13 +1,12 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
-using WebRunApplication.DAL.Interfaces;
-using WebRunApplication.DataEntity;
-using WebRunApplication.Interfaces;
-using WebRunApplication.Models;
-using WebRunApplication.Response;
-using WebRunApplication.Services.Interfaces;
+using WebRunApplication.Domain.Enums.DAL.Interfaces;
+using WebRunApplication.Domain.Entities;
+using WebRunApplication.Domain.Enums.Models;
+using WebRunApplication.Domain.Enums.Response;
+using WebRunApplication.Domain.Enums.Services.Interfaces;
 
-namespace WebRunApplication.Services.Implementations
+namespace WebRunApplication.Domain.Enums.Services.Implementations
 {
     public class AccountService : IAccountService
     {
@@ -46,7 +45,7 @@ namespace WebRunApplication.Services.Implementations
                 return new BaseResponse<ClaimsIdentity>
                 {
                     Data = result,
-                    StatusCode = Enums.StatusCode.OK
+                    StatusCode = StatusCode.OK
                 };
             }
             catch(Exception exception)
@@ -56,7 +55,7 @@ namespace WebRunApplication.Services.Implementations
                 return new BaseResponse<ClaimsIdentity>
                 {
                     Description = exception.Message,
-                    StatusCode = Enums.StatusCode.InternalServerError
+                    StatusCode = StatusCode.InternalServerError
                 };
             }
         }
@@ -72,7 +71,7 @@ namespace WebRunApplication.Services.Implementations
                     return new BaseResponse<ClaimsIdentity>
                     {
                         Description = "Данный логин занят",
-                        StatusCode = Enums.StatusCode.AlreadyExists
+                        StatusCode = StatusCode.AlreadyExists
                     };
                 }
 
@@ -84,7 +83,7 @@ namespace WebRunApplication.Services.Implementations
                     Weight = model.Weight,
                     Height = model.Height,
                     Gender = model.Gender,
-                    Role = Enums.Role.User,
+                    Role = Role.User,
                     Email = model.Email,
                     Fullname = model.Fullname
                 };
@@ -97,7 +96,7 @@ namespace WebRunApplication.Services.Implementations
                 {
                     Data = result,
                     Description = "Пользователь зарегистрирован",
-                    StatusCode = Enums.StatusCode.OK
+                    StatusCode = Domain.Enums.StatusCode.OK
                 };
             }
             catch(Exception exception)
@@ -107,7 +106,7 @@ namespace WebRunApplication.Services.Implementations
                 return new BaseResponse<ClaimsIdentity>
                 {
                     Description = exception.Message,
-                    StatusCode = Enums.StatusCode.InternalServerError
+                    StatusCode = Domain.Enums.StatusCode.InternalServerError
                 };
             }
         }
@@ -116,8 +115,8 @@ namespace WebRunApplication.Services.Implementations
         {
             var claims = new List<Claim>
             {
-                new Claim(ClaimsIdentity.DefaultNameClaimType, user.Login),
-                new Claim(ClaimsIdentity.DefaultRoleClaimType, user.Role.ToString())
+                new (ClaimsIdentity.DefaultNameClaimType, user.Login),
+                new (ClaimsIdentity.DefaultRoleClaimType, user.Role.ToString())
             };
 
             return new ClaimsIdentity(claims, "ApplicationCookie",

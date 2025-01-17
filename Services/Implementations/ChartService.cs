@@ -1,12 +1,11 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using WebRunApplication.DAL.Interfaces;
-using WebRunApplication.DAL.Repositories;
-using WebRunApplication.DataEntity;
-using WebRunApplication.Interfaces;
-using WebRunApplication.Response;
-using WebRunApplication.Services.Interfaces;
+using WebRunApplication.Domain.Enums.DAL.Interfaces;
+using WebRunApplication.Domain.Entities;
+using WebRunApplication.Domain.Enums.Interfaces;
+using WebRunApplication.Domain.Enums.Response;
+using WebRunApplication.Domain.Enums.Services.Interfaces;
 
-namespace WebRunApplication.Services.Implementations
+namespace WebRunApplication.Domain.Enums.Services.Implementations
 {
     public class ChartService : IChartService
     {
@@ -14,6 +13,8 @@ namespace WebRunApplication.Services.Implementations
         private readonly IBaseRepository<Training> _trainingRepository;
         private readonly IBaseRepository<Indicator> _indicatorRepository;
         private readonly IBaseRepository<TrainingTemplate> _trainingTemplateRepository;
+        
+        // todo: логгер не используется((
         private readonly ILogger<ChartService> _logger;
 
         public ChartService(
@@ -34,11 +35,16 @@ namespace WebRunApplication.Services.Implementations
         {
             var user = await _userRepository.GetAll().FirstOrDefaultAsync(x => x.Login == login);
 
+            // todo: нужно обнюхать этот код, может его можно упростить
             var trainings = 
                 _indicatorRepository
                 .GetAll()
                 .Where(ind => ind.UserId == user.Id)
-                .Join(_trainingRepository.GetAll(), ind => ind.Date, train => train.Date, (ind, train) => new { ind, train })
+                .Join(
+                    _trainingRepository.GetAll(),
+                    ind => ind.Date,
+                    train => train.Date,
+                    (ind, train) => new { ind, train })
                 .Join(_trainingTemplateRepository.GetAll(), selector => selector.train.TrainTemplateId,
                     template => template.Id, (selector, template) => template.Title)
                 .GroupBy(x => x)
@@ -47,7 +53,7 @@ namespace WebRunApplication.Services.Implementations
             return new BaseResponse<Dictionary<string, int>>
             {
                 Data = trainings,
-                StatusCode = Enums.StatusCode.OK
+                StatusCode = Domain.Enums.StatusCode.OK
             };
         }
     }

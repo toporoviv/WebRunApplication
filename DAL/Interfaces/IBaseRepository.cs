@@ -1,4 +1,4 @@
-﻿namespace WebRunApplication.DAL.Interfaces
+﻿namespace WebRunApplication.Domain.Enums.DAL.Interfaces
 {
     public interface IBaseRepository<T>
     {

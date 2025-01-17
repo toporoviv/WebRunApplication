@@ -1,9 +1,9 @@
 ﻿using System.Security.Claims;
-using WebRunApplication.Interfaces;
-using WebRunApplication.Models;
-using WebRunApplication.Response;
+using WebRunApplication.Domain.Enums.Models;
+using WebRunApplication.Domain.Enums.Response;
+using WebRunApplication.Domain.Enums.Interfaces;
 
-namespace WebRunApplication.Services.Interfaces
+namespace WebRunApplication.Domain.Enums.Services.Interfaces
 {
     public interface IAccountService
     {

@@ -1,11 +1,12 @@
-﻿using WebRunApplication.DataEntity;
+﻿using WebRunApplication.Domain.Entities;
 
-namespace WebRunApplication.Models
+namespace WebRunApplication.Domain.Enums.Models
 {
-    public class UserViewModel : User
+    // todo: сомнительно выглядит
+    public class UserViewModel // : User
     {
-        public List<TrainingInformation> Trainings { get; set; }
+        public List<TrainingInformation> Trainings { get; init; } = new();
 
-        public User User { get; set; }
+        public required User User { get; init; }
     }
 }

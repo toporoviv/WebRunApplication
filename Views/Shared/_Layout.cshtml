@@ -1,4 +1,5 @@
-﻿<!DOCTYPE html>
+﻿@using Microsoft.AspNetCore.Mvc.TagHelpers
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -60,7 +61,7 @@
                                 <a class="nav-link text-dark" style="text-align:right" asp-controller="TrainingStatistical" asp-action="Index">****</a>
                             </li>
 
-                            @if (User.IsInRole(WebRunApplication.Enums.Role.Admin.ToString()))
+                            @if (User.IsInRole(Role.Admin.ToString()))
                             {
                                 <li>
                                     <a class="nav-link text-dark" style="text-align:right" asp-controller="Admin" asp-action="Question">Вопросы</a>

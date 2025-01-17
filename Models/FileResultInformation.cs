@@ -1,4 +1,4 @@
-﻿namespace WebRunApplication.Models
+﻿namespace WebRunApplication.Domain.Enums.Models
 {
     public class FileResultInformation
     {

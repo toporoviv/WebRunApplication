@@ -1,8 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using WebRunApplication.DataEntity.Forum;
-using WebRunApplication.Models;
+using WebRunApplication.Domain.Entities;
+using WebRunApplication.Domain.Entities.Forum;
+using WebRunApplication.Domain.Enums.Models;
 
-namespace WebRunApplication.DataEntity
+namespace WebRunApplication
 {
     public class ApplicationDbContext : DbContext
     {
@@ -19,68 +20,59 @@ namespace WebRunApplication.DataEntity
             if (Users.Count() == 0)
             {
                 Users.AddRange(DataBaseGenerator.GenerateUsers());
-                SaveChanges();
             }
 
             if (Indicators.Count() == 0)
             {
                 Indicators.AddRange(DataBaseGenerator.GenerateIndicators());
-                SaveChanges();
             }
 
             if (Helps.Count() == 0)
             {
                 Helps.AddRange(DataBaseGenerator.GenerateHelps());
-                SaveChanges();
             }
 
             if (TemplateTypes.Count() == 0)
             {
                 TemplateTypes.AddRange(DataBaseGenerator.GenerateTemplateTypes());
-                SaveChanges();
             }
 
             if (Trainings.Count() == 0)
             {
                 Trainings.AddRange(DataBaseGenerator.GenerateTrainings());
-                SaveChanges();
             }
 
             if (TrainingTemplates.Count() == 0)
             {
                 TrainingTemplates.AddRange(DataBaseGenerator.GenerateTrainingTemplate());
-                SaveChanges();
             }
 
             if (TrainingTypes.Count() == 0)
             {
                 TrainingTypes.AddRange(DataBaseGenerator.GenerateTrainingTypes());
-                SaveChanges();
             }
 
             if (Mailings.Count() == 0)
             {
                 Mailings.AddRange(DataBaseGenerator.GenerateMailings());
-                SaveChanges();
             }
 
             if (MailingTopics.Count() == 0)
             {
                 MailingTopics.AddRange(DataBaseGenerator.GenerateMailingTopics());
-                SaveChanges();
             }
 
             if (MailingTopicSubscribers.Count() == 0)
             {
                 MailingTopicSubscribers.AddRange(DataBaseGenerator.GenerateMailingTopicSubscribers());
-                SaveChanges();
             }
 
             if (ForumMessages.Count() == 0)
             {
                 ForumMessages.AddRange(DataBaseGenerator.GenerateForumMessages());
-                SaveChanges();
             }
+            
+            SaveChanges();
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

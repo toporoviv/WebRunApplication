@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 
-namespace WebRunApplication.Models
+namespace WebRunApplication.Domain.Enums.Models
 {
     public class IndicatorViewModel
     {

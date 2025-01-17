@@ -1,25 +1,21 @@
 ﻿using iTextSharp.text;
 using iTextSharp.text.pdf;
-using Java.Nio.FileNio.Attributes;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Linq.Expressions;
-using WebRunApplication.DAL.Interfaces;
-using WebRunApplication.DataEntity;
-using WebRunApplication.Enums;
-using WebRunApplication.Interfaces;
-using WebRunApplication.Models;
-using WebRunApplication.Response;
-using WebRunApplication.Services.Interfaces;
+using WebRunApplication.Domain.Enums.DAL.Interfaces;
+using WebRunApplication.Domain.Entities;
+using WebRunApplication.Domain.Enums.Interfaces;
+using WebRunApplication.Domain.Enums.Models;
+using WebRunApplication.Domain.Enums.Response;
+using WebRunApplication.Domain.Enums.Services.Interfaces;
 
-namespace WebRunApplication.Services.Implementations
+namespace WebRunApplication.Domain.Enums.Services.Implementations
 {
     public class PdfService : IPdfService
     {
         private readonly IBaseRepository<User> _userRepository;
         private readonly IBaseRepository<Indicator> _indicatorRepository;
         private readonly IBaseRepository<Training> _trainingRepository;
-        IBaseRepository<TrainingTemplate> _trainingTemplateRepository;
+        private readonly IBaseRepository<TrainingTemplate> _trainingTemplateRepository;
         private readonly ILogger<PdfService> _logger;
 
         public PdfService(
@@ -36,13 +32,24 @@ namespace WebRunApplication.Services.Implementations
             _logger = logger;
         }
 
-        public async Task<IBaseResponse<FileResultInformation>> GetCurrentTrainingInformationPdf(int trainingTemplateId, string userLogin, string fileName)
+        public async Task<IBaseResponse<FileResultInformation>> GetCurrentTrainingInformationPdf
+        (
+            int trainingTemplateId,
+            string userLogin,
+            string fileName
+        )
         {
             try
             {
-                var user = await _userRepository.GetAll().FirstOrDefaultAsync(x => x.Login == userLogin);
+                // todo: user может быть null
+                var user = await _userRepository
+                    .GetAll()
+                    .FirstOrDefaultAsync(x => x.Login == userLogin);
 
-                var title = await _trainingTemplateRepository.GetAll().FirstOrDefaultAsync(x => x.Id == trainingTemplateId);
+                // todo: title может быть null
+                var title = await _trainingTemplateRepository
+                    .GetAll()
+                    .FirstOrDefaultAsync(x => x.Id == trainingTemplateId);
 
                 var data = _indicatorRepository
                     .GetAll()
@@ -65,9 +72,16 @@ namespace WebRunApplication.Services.Implementations
                     Doc.Open();
                     Doc.NewPage();
 
-                    string ARIALUNI_TFF = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Fonts), "ARIAL.TTF");
+                    string ARIALUNI_TFF = Path.Combine(
+                        Environment.GetFolderPath(Environment.SpecialFolder.Fonts),
+                        "ARIAL.TTF"
+                    );
 
-                    BaseFont bf = BaseFont.CreateFont(ARIALUNI_TFF, BaseFont.IDENTITY_H, BaseFont.NOT_EMBEDDED);
+                    BaseFont bf = BaseFont.CreateFont(
+                        ARIALUNI_TFF,
+                        BaseFont.IDENTITY_H,
+                        BaseFont.NOT_EMBEDDED
+                    );
 
                     Font f = new Font(bf, 12, Font.NORMAL);
 
@@ -140,10 +154,12 @@ namespace WebRunApplication.Services.Implementations
             }
         }
 
-        public async Task<IBaseResponse<FileResultInformation>> GetIndicatorsPdf(
+        public async Task<IBaseResponse<FileResultInformation>> GetIndicatorsPdf
+        (
             string exportData,
             List<Indicator> userIndicators,
-            List<IndicatorViewModel> indicatorsResults)
+            List<IndicatorViewModel> indicatorsResults
+        )
         {
             try
             {
@@ -156,9 +172,16 @@ namespace WebRunApplication.Services.Implementations
                     Doc.Open();
                     Doc.NewPage();
 
-                    string ARIALUNI_TFF = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Fonts), "ARIAL.TTF");
+                    string ARIALUNI_TFF = Path.Combine(
+                        Environment.GetFolderPath(Environment.SpecialFolder.Fonts), 
+                        "ARIAL.TTF"
+                    );
 
-                    BaseFont bf = BaseFont.CreateFont(ARIALUNI_TFF, BaseFont.IDENTITY_H, BaseFont.NOT_EMBEDDED);
+                    BaseFont bf = BaseFont.CreateFont(
+                        ARIALUNI_TFF, 
+                        BaseFont.IDENTITY_H, 
+                        BaseFont.NOT_EMBEDDED
+                    );
 
                     Font f = new Font(bf, 12, Font.NORMAL);
 
@@ -238,14 +261,23 @@ namespace WebRunApplication.Services.Implementations
         {
             try
             {
+                // todo: user может быть null
                 var user = await _userRepository.GetAll().FirstOrDefaultAsync(x => x.Login == userLogin);
 
                 var data = _indicatorRepository
                     .GetAll()
                     .Where(x => x.Date >= timeInterval.Begin && x.Date <= timeInterval.End && x.UserId == user.Id)
-                    .Join(_trainingRepository.GetAll(), indicator => indicator.Date, training => training.Date, (indicator, training) => training)
-                    .Join(_trainingTemplateRepository.GetAll(), training => training.TrainTemplateId, template => template.Id,
-                        (training, template) => new { training, template.Title })
+                    .Join(
+                        _trainingRepository.GetAll(),
+                        indicator => indicator.Date,
+                        training => training.Date,
+                        (indicator, training) => training)
+                    .Join(
+                        _trainingTemplateRepository.GetAll(),
+                        training => training.TrainTemplateId,
+                        template => template.Id,
+                        (training, template) => new { training, template.Title }
+                    )
                     .GroupBy(x => new { x.training.Date.Month, x.Title })
                     .Select(x => new
                     {
@@ -254,7 +286,11 @@ namespace WebRunApplication.Services.Implementations
                         TotalDuration = x.Select(y => y.training).ToList()
                     })
                     .GroupBy(x => x.Month)
-                    .ToDictionary(x => x.Key, x => new { Titles = x.Select(y => y.Title).ToList(), TotalDuration = x.Select(y => y.TotalDuration).ToList() });
+                    .ToDictionary(x => x.Key, x => new
+                    {
+                        Titles = x.Select(y => y.Title).ToList(),
+                        TotalDuration = x.Select(y => y.TotalDuration).ToList()
+                    });
 
                 Document Doc = new Document(PageSize.LETTER);
 
@@ -264,9 +300,16 @@ namespace WebRunApplication.Services.Implementations
                     Doc.Open();
                     Doc.NewPage();
 
-                    string ARIALUNI_TFF = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Fonts), "ARIAL.TTF");
+                    string ARIALUNI_TFF = Path.Combine(
+                        Environment.GetFolderPath(Environment.SpecialFolder.Fonts),
+                        "ARIAL.TTF"
+                    );
 
-                    BaseFont bf = BaseFont.CreateFont(ARIALUNI_TFF, BaseFont.IDENTITY_H, BaseFont.NOT_EMBEDDED);
+                    BaseFont bf = BaseFont.CreateFont(
+                        ARIALUNI_TFF, 
+                        BaseFont.IDENTITY_H, 
+                        BaseFont.NOT_EMBEDDED
+                    );
 
                     Font f = new Font(bf, 12, Font.NORMAL);
 
@@ -275,7 +318,7 @@ namespace WebRunApplication.Services.Implementations
 
                     PdfPTable table1 = new PdfPTable(1);
                     Font font2 = new Font(bf, 20, Font.BOLD);
-                    //Set the biography  
+                    
                     PdfPCell cell1 = new PdfPCell()
                     {
                         BorderWidthBottom = 0f,
@@ -320,9 +363,14 @@ namespace WebRunApplication.Services.Implementations
                             for (int i = 0; i < trainingTotal.Value.Titles[j].Count(); i++)
                             {
                                 table.AddCell(new PdfPCell(new Phrase(trainingTotal.Value.Titles[j][i].ToString(), f)));
-                                table.AddCell(new PdfPCell(new Phrase(trainingTotal.Value.TotalDuration[j][i].Duration.ToString(), f)));
+                                table.AddCell(new PdfPCell(new Phrase(
+                                    trainingTotal.Value.TotalDuration[j][i].Duration.ToString(), f)));
 
-                                totalTimeMonth += new TimeSpan(0, 0, trainingTotal.Value.TotalDuration[j].Sum(y => (int)y.Duration.TotalSeconds));
+                                totalTimeMonth += new TimeSpan(0, 0, trainingTotal
+                                    .Value
+                                    .TotalDuration[j]
+                                    .Sum(y => (int)y.Duration.TotalSeconds)
+                                );
                             }
                         }
 
@@ -363,6 +411,7 @@ namespace WebRunApplication.Services.Implementations
 
         public async Task<List<Indicator>> GetUserIndicators(string login)
         {
+            // todo: тут юзера может не быть, надо учесть это
             var user = await _userRepository.GetAll().FirstOrDefaultAsync(x => x.Login == login);
 
             var userIndicators = _indicatorRepository

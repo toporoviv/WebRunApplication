@@ -1,4 +1,4 @@
-﻿namespace WebRunApplication.Enums
+﻿namespace WebRunApplication.Domain.Enums
 {
     public enum Role
     {

@@ -1,6 +1,6 @@
-﻿using WebRunApplication.Interfaces;
+﻿using WebRunApplication.Domain.Enums.Interfaces;
 
-namespace WebRunApplication.Services.Interfaces
+namespace WebRunApplication.Domain.Enums.Services.Interfaces
 {
     public interface IDataBaseGeneratorService
     {

@@ -1,4 +1,4 @@
-﻿namespace WebRunApplication.Exceptions
+﻿namespace WebRunApplication.Domain.Enums.Exceptions
 {
     public class IncorrectPasswordException : Exception
     {

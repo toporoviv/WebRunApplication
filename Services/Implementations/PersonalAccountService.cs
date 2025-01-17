@@ -1,14 +1,14 @@
-﻿using Android.Content;
-using Microsoft.EntityFrameworkCore;
-using WebRunApplication.DAL.Interfaces;
-using WebRunApplication.DataEntity;
-using WebRunApplication.Interfaces;
-using WebRunApplication.Models;
-using WebRunApplication.Response;
-using WebRunApplication.Services.Interfaces;
+﻿using Microsoft.EntityFrameworkCore;
+using WebRunApplication.Domain.Enums.DAL.Interfaces;
+using WebRunApplication.Domain.Entities;
+using WebRunApplication.Domain.Enums.Interfaces;
+using WebRunApplication.Domain.Enums.Models;
+using WebRunApplication.Domain.Enums.Response;
+using WebRunApplication.Domain.Enums.Services.Interfaces;
 
-namespace WebRunApplication.Services.Implementations
+namespace WebRunApplication.Domain.Enums.Services.Implementations
 {
+    // todo: поправить все асинхронные методы
     public class PersonalAccountService : IPersonalAccountService
     {
         private readonly IBaseRepository<User> _userRepository;
@@ -38,7 +38,10 @@ namespace WebRunApplication.Services.Implementations
         {
             try
             {
-                var user = await _userRepository.GetAll().FirstOrDefaultAsync(x => x.Login == login);
+                // todo: user может быть null
+                var user = await _userRepository
+                    .GetAll()
+                    .FirstOrDefaultAsync(x => x.Login == login);
 
                 var ids = _mailingTopicSubscriberRepository
                     .GetAll()
@@ -47,18 +50,23 @@ namespace WebRunApplication.Services.Implementations
                     .ToList();
 
                 var indexes = titles
-                    .Where(x => !ids.Contains((uint)x))
+                    .Where(x => !ids.Contains(x))
                     .ToList();
 
-                for (int i = 0; i < indexes.Count; i++)
+                // todo: можно запихать все это в таски и использовать Task.WhenAll
+                for (var i = 0; i < indexes.Count; i++)
                 {
-                    _mailingTopicSubscriberRepository.Create(new MailingTopicSubscriber { MailingTopicId = (uint)indexes[i], UserId = user.Id });
+                    await _mailingTopicSubscriberRepository.Create(new MailingTopicSubscriber
+                    {
+                        MailingTopicId = indexes[i],
+                        UserId = user.Id
+                    });
                 }
 
                 return new BaseResponse<bool>
                 {
                     Data = true,
-                    StatusCode = Enums.StatusCode.OK
+                    StatusCode = Domain.Enums.StatusCode.OK
                 };
             }
             catch(Exception exception)
@@ -67,7 +75,7 @@ namespace WebRunApplication.Services.Implementations
                 return new BaseResponse<bool>
                 {
                     Description = exception.Message,
-                    StatusCode = Enums.StatusCode.InternalServerError
+                    StatusCode = Domain.Enums.StatusCode.InternalServerError
                 };
             }
         }
@@ -81,7 +89,7 @@ namespace WebRunApplication.Services.Implementations
                 return new BaseResponse<List<MailingTopic>>
                 {
                     Data = list,
-                    StatusCode = Enums.StatusCode.OK
+                    StatusCode = Domain.Enums.StatusCode.OK
                 };
             }
             catch(Exception exception)
@@ -90,7 +98,7 @@ namespace WebRunApplication.Services.Implementations
                 return new BaseResponse<List<MailingTopic>>
                 {
                     Description = exception.Message,
-                    StatusCode = Enums.StatusCode.InternalServerError
+                    StatusCode = Domain.Enums.StatusCode.InternalServerError
                 };
             }
         }
@@ -104,9 +112,18 @@ namespace WebRunApplication.Services.Implementations
                 var trainings = await _indicatorRepository
                     .GetAll()
                     .Where(ind => ind.UserId == user.Id)
-                    .Join(_trainingRepository.GetAll(), ind => ind.Date, train => train.Date, (ind, train) => new { ind, train })
-                    .Join(_trainingTemplateRepository.GetAll(), selector => selector.train.TrainTemplateId,
-                        template => template.Id, (selector, template) => new { selector.ind, template.Title })
+                    .Join(
+                        _trainingRepository.GetAll(),
+                        ind => ind.Date,
+                        train => train.Date,
+                        (ind, train) => new { ind, train }
+                    )
+                    .Join(
+                        _trainingTemplateRepository.GetAll(),
+                        selector => selector.train.TrainTemplateId,
+                        template => template.Id, 
+                        (selector, template) => new { selector.ind, template.Title }
+                    )
                     .Select(result => new TrainingInformation
                     {
                         Id = result.ind.Id,
@@ -121,12 +138,13 @@ namespace WebRunApplication.Services.Implementations
                         Duration = result.ind.Duration,
                         Pressure = result.ind.Pressure,
                         UserId = result.ind.UserId
-                    }).ToListAsync();
+                    })
+                    .ToListAsync();
 
                 return new BaseResponse<List<TrainingInformation>>
                 {
                     Data = trainings,
-                    StatusCode = Enums.StatusCode.OK
+                    StatusCode = Domain.Enums.StatusCode.OK
                 };
             }
             catch(Exception exception)
@@ -135,7 +153,7 @@ namespace WebRunApplication.Services.Implementations
                 return new BaseResponse<List<TrainingInformation>>
                 {
                     Description = exception.Message,
-                    StatusCode = Enums.StatusCode.InternalServerError
+                    StatusCode = Domain.Enums.StatusCode.InternalServerError
                 };
             }
         }

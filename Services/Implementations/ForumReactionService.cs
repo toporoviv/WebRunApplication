@@ -1,12 +1,11 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using WebRunApplication.DAL.Interfaces;
-using WebRunApplication.DataEntity.Forum;
-using WebRunApplication.Enums;
-using WebRunApplication.Interfaces;
-using WebRunApplication.Response;
-using WebRunApplication.Services.Interfaces;
+using WebRunApplication.Domain.Enums.DAL.Interfaces;
+using WebRunApplication.Domain.Entities.Forum;
+using WebRunApplication.Domain.Enums.Interfaces;
+using WebRunApplication.Domain.Enums.Response;
+using WebRunApplication.Domain.Enums.Services.Interfaces;
 
-namespace WebRunApplication.Services.Implementations
+namespace WebRunApplication.Domain.Enums.Services.Implementations
 {
     public class ForumReactionService : IForumReactionService
     {

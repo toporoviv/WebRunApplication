@@ -1,12 +1,12 @@
-﻿using WebRunApplication.DataEntity;
+﻿using WebRunApplication.Domain.Entities;
 
-namespace WebRunApplication.Models
+namespace WebRunApplication.Domain.Enums.Models
 {
     public class MessageViewModel
     {
-        public uint Id { get; set; }
+        public int Id { get; set; }
 
-        public uint? ParentId { get; set; }
+        public int? ParentId { get; set; }
 
         public string Fullname { get; set; }
 

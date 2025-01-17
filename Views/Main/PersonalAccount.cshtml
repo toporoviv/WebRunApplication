@@ -1,4 +1,5 @@
-﻿@model UserViewModel
+﻿@using Microsoft.AspNetCore.Mvc.TagHelpers
+@model UserViewModel
 
 <link rel="stylesheet" href="~/css/PersonalAccountStyle.css" />
 
@@ -74,7 +75,7 @@
             <input asp-controller="Main" asp-action="Subscribe" class="custom_button" type="submit" value="Подписка на рассылки" />
         }
 
-        @if(User.IsInRole(WebRunApplication.Enums.Role.Admin.ToString()))
+        @if(User.IsInRole(WebRunApplication.Domain.Enums.Role.Admin.ToString()))
         {
             @using (Html.BeginForm("AddTopic", "Admin", FormMethod.Post))
             {

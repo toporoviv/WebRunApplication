@@ -1,13 +1,12 @@
 ﻿using Microsoft.AspNetCore.Cors.Infrastructure;
-using static Android.Provider.ContactsContract;
-using WebRunApplication.DAL.Interfaces;
-using WebRunApplication.DAL.Repositories;
-using WebRunApplication.Services.Implementations;
-using WebRunApplication.Services.Interfaces;
-using WebRunApplication.DataEntity;
-using WebRunApplication.DataEntity.Forum;
+using WebRunApplication.Domain.Enums.DAL.Interfaces;
+using WebRunApplication.Domain.Enums.DAL.Repositories;
+using WebRunApplication.Domain.Entities;
+using WebRunApplication.Domain.Entities.Forum;
+using WebRunApplication.Domain.Enums.Services.Implementations;
+using WebRunApplication.Domain.Enums.Services.Interfaces;
 
-namespace WebRunApplication.Models
+namespace WebRunApplication.Domain.Enums.Models
 {
     public static class Initializer
     {

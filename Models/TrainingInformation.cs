@@ -1,6 +1,6 @@
-﻿using WebRunApplication.DataEntity;
+﻿using WebRunApplication.Domain.Entities;
 
-namespace WebRunApplication.Models
+namespace WebRunApplication.Domain.Enums.Models
 {
     public class TrainingInformation : Indicator
     {

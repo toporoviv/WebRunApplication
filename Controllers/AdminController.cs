@@ -1,14 +1,10 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Identity.Client;
-using System.Linq;
-using WebRunApplication.DataEntity;
-using WebRunApplication.Enums;
-using WebRunApplication.Models;
-using WebRunApplication.Services.Interfaces;
+using WebRunApplication.Domain.Entities;
+using WebRunApplication.Domain.Enums.Models;
+using WebRunApplication.Domain.Enums.Services.Interfaces;
 
-namespace WebRunApplication.Controllers
+namespace WebRunApplication.Domain.Enums.Controllers
 {
     [Authorize(Roles = "Admin")]
     public class AdminController : Controller
@@ -16,6 +12,8 @@ namespace WebRunApplication.Controllers
         private readonly IAdminService _adminService;
         private readonly IUserService _userService;
         private readonly IHelpService _helpService;
+        
+        // todo: _mailSenderService не используется((
         private readonly IMailSenderService _mailSenderService;
         private readonly IMailingService _mailingService;
         private readonly IMailingTopicService _mailingTopicService;
@@ -41,7 +39,8 @@ namespace WebRunApplication.Controllers
         {
             var result = await _adminService.GetQuestions();
             
-            if (result.StatusCode == Enums.StatusCode.OK) return View(result.Data);
+            if (result.StatusCode == Domain.Enums.StatusCode.OK) 
+                return View(result.Data);
 
             ModelState.AddModelError("", result.Description);
 
@@ -53,7 +52,7 @@ namespace WebRunApplication.Controllers
         {
             var result = await _helpService.GetAll();
 
-            if (result.StatusCode == Enums.StatusCode.OK)
+            if (result.StatusCode == Domain.Enums.StatusCode.OK)
             { 
                 return RedirectToAction("Answer", "Admin", result.Data.FirstOrDefault(x => x.Id == id));
             }
@@ -62,9 +61,9 @@ namespace WebRunApplication.Controllers
 
             return RedirectToAction("Question", "Admin");
         }
-
+        
         [HttpGet]
-        public async Task<IActionResult> Answer(Help model)
+        public IActionResult Answer(Help model)
         {
             return model is null ? new EmptyResult() : View(model);
         }
@@ -74,7 +73,8 @@ namespace WebRunApplication.Controllers
         {
             var result = await _adminService.CreateAnswer((uint)id, answer);
 
-            if (result.StatusCode == Enums.StatusCode.OK) return RedirectToAction("Question", "Admin");
+            if (result.StatusCode == Domain.Enums.StatusCode.OK) 
+                return RedirectToAction("Question", "Admin");
 
             ModelState.AddModelError("", result.Description);
 
@@ -100,15 +100,22 @@ namespace WebRunApplication.Controllers
                 .Select(topic => topic.UserId)
                 .ToList();
 
+            // todo: нужно обработать если будет null
             var topic = (await _mailingTopicService.GetAll()).Data.FirstOrDefault(topic => topic.Id == id).Title;
 
             var users = (await _userService.GetAll()).Data.Where(user => indexes.Contains(user.Id)).ToList();
 
             await MailingTopics(users, topic, message);
 
-            var result = await _mailingService.Create(new Mailing { Date = DateTime.Now, MailingTopicId = (uint)id, Message = message });
+            var result = await _mailingService.Create(new Mailing
+            {
+                Date = DateTime.Now,
+                MailingTopicId = id,
+                Message = message
+            });
 
-            if (result.StatusCode != Enums.StatusCode.OK) ModelState.AddModelError("", result.Description);
+            if (result.StatusCode != Domain.Enums.StatusCode.OK) 
+                ModelState.AddModelError("", result.Description);
 
             return RedirectToAction("Index", "Home");
         }
@@ -116,23 +123,33 @@ namespace WebRunApplication.Controllers
         [NonAction]
         private async Task MailingTopics(List<User> users, string topic, string message)
         {
-            for (int i = 0; i < users.Count; i++)
+            foreach (var user in users)
             {
-                if (!string.IsNullOrEmpty(users[i].Email))
-                {
-                    var sender = new MailSender("runapp90@mail.ru", users[i].Email, "RunApp");
-                    await sender.Send(topic, message);
-                }
+                if (string.IsNullOrWhiteSpace(user.Email)) // юзер мог не вводить свою почту, валидный случай (пока)
+                    continue;
+                
+                // todo: вынести в конфиг почту
+                var sender = new MailSender("runapp90@mail.ru", user.Email, "RunApp");
+                
+                // todo: надо бы раскидать этот процесс по таскам и использовать Task.WhenAll
+                await sender.Send(topic, message);
             }
         }
 
         [HttpPost]
         public async Task<IActionResult> AddTopic(string newTopic)
         {
+            // todo: надо убить этого кракена
             if ((await _mailingTopicService.GetAll()).Data.Where(x => x.Title == newTopic).Count() == 0)
             {
-                var result = await _mailingTopicService.Create(new MailingTopic { Title = newTopic });
-                if (result.StatusCode != Enums.StatusCode.OK) ModelState.AddModelError("", result.Description);
+                var result = await _mailingTopicService.Create(new MailingTopic
+                {
+                    Title = newTopic 
+                    
+                });
+                
+                if (result.StatusCode != Domain.Enums.StatusCode.OK) 
+                    ModelState.AddModelError("", result.Description);
             }
 
             return RedirectToAction("PersonalAccount", "Main");
@@ -153,15 +170,21 @@ namespace WebRunApplication.Controllers
         public async Task RemoveTopic(int id)
         {
             var result = await _mailingTopicService.Delete(id);
-            if (result.StatusCode != Enums.StatusCode.OK) ModelState.AddModelError("", result.Description);
+            if (result.StatusCode != Domain.Enums.StatusCode.OK) 
+                ModelState.AddModelError("", result.Description);
         }
 
         [HttpPost]
         public async Task<IActionResult> ChangeTopic(int titles, string message)
         {
-            var result = await _mailingTopicService.Update(new MailingTopic { Id = (uint)titles, Title = message });
+            var result = await _mailingTopicService.Update(new MailingTopic
+            {
+                Id = titles, 
+                Title = message
+            });
 
-            if (result.StatusCode != Enums.StatusCode.OK) ModelState.AddModelError("", result.Description);
+            if (result.StatusCode != Domain.Enums.StatusCode.OK) 
+                ModelState.AddModelError("", result.Description);
 
             return RedirectToAction("PersonalAccount", "Main");
         }

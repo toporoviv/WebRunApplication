@@ -1,7 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using WebRunApplication.Enums;
 
-namespace WebRunApplication.Models
+namespace WebRunApplication.Domain.Enums.Models
 {
     public class RegisterModel
     {
@@ -31,7 +30,7 @@ namespace WebRunApplication.Models
         public string Fullname { get; set; }
 
         [Required(ErrorMessage = "Необходимо указать возраст")]
-        public uint Age { get; set; }
+        public int Age { get; set; }
 
         [Required(ErrorMessage = "Необходимо выбрать пол")]
         public Gender Gender { get; set; }

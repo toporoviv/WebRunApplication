@@ -1,31 +1,33 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using WebRunApplication.DAL.Interfaces;
-using WebRunApplication.DAL.Repositories;
-using WebRunApplication.DataEntity;
-using WebRunApplication.Interfaces;
-using WebRunApplication.Models;
-using WebRunApplication.Response;
-using WebRunApplication.Services.Interfaces;
+using WebRunApplication.Domain.Enums.DAL.Interfaces;
+using WebRunApplication.Domain.Entities;
+using WebRunApplication.Domain.Enums.Interfaces;
+using WebRunApplication.Domain.Enums.Models;
+using WebRunApplication.Domain.Enums.Response;
+using WebRunApplication.Domain.Enums.Services.Interfaces;
 
-namespace WebRunApplication.Services.Implementations
+namespace WebRunApplication.Domain.Enums.Services.Implementations
 {
     public class TrainingStatisticalService : ITrainingStatisticalService
     {
         private readonly IBaseRepository<Indicator> _indicatorRepository;
         private readonly IBaseRepository<Training> _trainingRepository;
         private readonly IBaseRepository<User> _userRepository;
+        
+        // todo: _trainingTemplateRepository не используется((
         private readonly IBaseRepository<TrainingTemplate> _trainingTemplateRepository;
         private readonly IBaseRepository<Mailing> _mailingRepository;
         private readonly ILogger<TrainingStatisticalService> _logger;
 
-        public TrainingStatisticalService(
+        public TrainingStatisticalService
+        (
             IBaseRepository<Indicator> indicatorRepository,
             IBaseRepository<Training> trainingRepository,
             IBaseRepository<User> userRepository,
             IBaseRepository<TrainingTemplate> trainingTemplateRepository,
             IBaseRepository<Mailing> mailingRepository,
             ILogger<TrainingStatisticalService> logger
-            )
+        )
         {
             _indicatorRepository = indicatorRepository;
             _trainingRepository = trainingRepository;
@@ -39,6 +41,7 @@ namespace WebRunApplication.Services.Implementations
         {
             try
             {
+                // todo: пересмотреть логику + юзер не используется + user может быть null
                 var user = await _userRepository.GetAll().FirstOrDefaultAsync(x => x.Login == login);
 
                 var data = _mailingRepository.GetAll()
@@ -54,7 +57,7 @@ namespace WebRunApplication.Services.Implementations
                 return new BaseResponse<List<TrainingStatisticalMailingCount>>
                 {
                     Data = data,
-                    StatusCode = Enums.StatusCode.OK
+                    StatusCode = Domain.Enums.StatusCode.OK
                 };
             }
             catch(Exception exception)
@@ -63,7 +66,7 @@ namespace WebRunApplication.Services.Implementations
                 return new BaseResponse<List<TrainingStatisticalMailingCount>>
                 {
                     Description = exception.Message,
-                    StatusCode = Enums.StatusCode.InternalServerError
+                    StatusCode = Domain.Enums.StatusCode.InternalServerError
                 };
             }
         }
@@ -72,11 +75,16 @@ namespace WebRunApplication.Services.Implementations
         {
             try
             {
+                // todo: user может быть null
                 var user = await _userRepository.GetAll().FirstOrDefaultAsync(x => x.Login == login);
 
                 var data = _indicatorRepository.GetAll()
                     .Where(x => x.UserId == user.Id)
-                    .Join(_trainingRepository.GetAll(), indicator => indicator.Date, training => training.Date, (indicator, training) => training)
+                    .Join(
+                        _trainingRepository.GetAll(),
+                        indicator => indicator.Date,
+                        training => training.Date,
+                        (indicator, training) => training)
                     .GroupBy(x => x.Date)
                     .Select(x => new TrainingStatisticalCountViewModel
                     {
@@ -89,16 +97,20 @@ namespace WebRunApplication.Services.Implementations
                 return new BaseResponse<List<TrainingStatisticalCountViewModel>>
                 {
                     Data = data,
-                    StatusCode = Enums.StatusCode.OK
+                    StatusCode = Domain.Enums.StatusCode.OK
                 };
             }
             catch(Exception exception)
             {
-                _logger.LogError(exception, $"[{nameof(TrainingStatisticalService)}.{nameof(GetTotalTrainingCount)}]: {exception.Message}");
+                _logger.LogError(
+                    exception, 
+                    $"[{nameof(TrainingStatisticalService)}.{nameof(GetTotalTrainingCount)}]: {exception.Message}"
+                );
+                
                 return new BaseResponse<List<TrainingStatisticalCountViewModel>>
                 {
                     Description = exception.Message,
-                    StatusCode = Enums.StatusCode.InternalServerError
+                    StatusCode = Domain.Enums.StatusCode.InternalServerError
                 };
             }
         }
@@ -107,11 +119,16 @@ namespace WebRunApplication.Services.Implementations
         {
             try
             {
+                // todo: user может быть null
                 var user = await _userRepository.GetAll().FirstOrDefaultAsync(x => x.Login == login);
 
                 var data = _indicatorRepository.GetAll().ToList()
                     .Where(x => x.UserId == user.Id)
-                    .Join(_trainingRepository.GetAll().ToList(), indicator => indicator.Date, training => training.Date, (indicator, training) => training)
+                    .Join(
+                        _trainingRepository.GetAll().ToList(),
+                        indicator => indicator.Date,
+                        training => training.Date,
+                        (_, training) => training)
                     .GroupBy(x => x.Date)
                     .Select(x => new TrainingStatisticalTotalDurationView
                     {
@@ -124,7 +141,7 @@ namespace WebRunApplication.Services.Implementations
                 return new BaseResponse<List<TrainingStatisticalTotalDurationView>>
                 {
                     Data = data,
-                    StatusCode = Enums.StatusCode.OK
+                    StatusCode = Domain.Enums.StatusCode.OK
                 };
             }
             catch (Exception exception)
@@ -133,7 +150,7 @@ namespace WebRunApplication.Services.Implementations
                 return new BaseResponse<List<TrainingStatisticalTotalDurationView>>
                 {
                     Description = exception.Message,
-                    StatusCode = Enums.StatusCode.InternalServerError
+                    StatusCode = Domain.Enums.StatusCode.InternalServerError
                 };
             }
         }
@@ -142,11 +159,16 @@ namespace WebRunApplication.Services.Implementations
         {
             try
             {
+                // todo: user может быть null
                 var user = await _userRepository.GetAll().FirstOrDefaultAsync(x => x.Login == login);
 
                 var data = _indicatorRepository.GetAll().ToList()
                     .Where(x => x.UserId == user.Id)
-                    .Join(_trainingRepository.GetAll().ToList(), indicator => indicator.Date, training => training.Date, (indicator, training) => training)
+                    .Join(
+                        _trainingRepository.GetAll().ToList(),
+                        indicator => indicator.Date,
+                        training => training.Date, 
+                        (_, training) => training)
                     .GroupBy(x => x.Date)
                     .Select(x => new TrainingStatisticalTotalDurationView
                     {
@@ -159,16 +181,19 @@ namespace WebRunApplication.Services.Implementations
                 return new BaseResponse<List<TrainingStatisticalTotalDurationView>>
                 {
                     Data = data,
-                    StatusCode = Enums.StatusCode.OK
+                    StatusCode = Domain.Enums.StatusCode.OK
                 };
             }
             catch (Exception exception)
             {
-                _logger.LogError(exception, $"[{nameof(TrainingStatisticalService)}.{nameof(GetTotalTrainingDuration)}]: {exception.Message}");
+                _logger.LogError(
+                    exception, 
+                    $"[{nameof(TrainingStatisticalService)}.{nameof(GetTotalTrainingDuration)}]: {exception.Message}"
+                );
                 return new BaseResponse<List<TrainingStatisticalTotalDurationView>>
                 {
                     Description = exception.Message,
-                    StatusCode = Enums.StatusCode.InternalServerError
+                    StatusCode = Domain.Enums.StatusCode.InternalServerError
                 };
             }
         }
@@ -177,26 +202,31 @@ namespace WebRunApplication.Services.Implementations
         {
             try
             {
+                // todo: user может быть null + юзер не используется
                 var user = await _userRepository.GetAll().FirstOrDefaultAsync(x => x.Login == login);
 
-                var data = _mailingRepository.GetAll()
-                .GroupBy(x => new { x.Date.Year, x.Date.Month })
-                .Select(x => (double)x.Count())
-                .ToList();
+                var data = _mailingRepository
+                    .GetAll()
+                    .GroupBy(x => new { x.Date.Year, x.Date.Month })
+                    .Select(x => (double)x.Count())
+                    .ToList();
 
                 return new BaseResponse<List<double>>
                 {
                     Data = data,
-                    StatusCode = Enums.StatusCode.OK
+                    StatusCode = Domain.Enums.StatusCode.OK
                 };
             }
             catch (Exception exception)
             {
-                _logger.LogError(exception, $"[{nameof(TrainingStatisticalService)}.{nameof(GetTotalMailingCountGroupByYearAndMonth)}]: {exception.Message}");
+                _logger.LogError(
+                    exception, 
+                    $"[{nameof(TrainingStatisticalService)}.{nameof(GetTotalMailingCountGroupByYearAndMonth)}]: {exception.Message}"
+                );
                 return new BaseResponse<List<double>>
                 {
                     Description = exception.Message,
-                    StatusCode = Enums.StatusCode.InternalServerError
+                    StatusCode = Domain.Enums.StatusCode.InternalServerError
                 };
             }
         }
@@ -205,11 +235,17 @@ namespace WebRunApplication.Services.Implementations
         {
             try
             {
+                // todo: user может быть null
                 var user = await _userRepository.GetAll().FirstOrDefaultAsync(x => x.Login == login);
 
-                var data = _indicatorRepository.GetAll()
+                var data = _indicatorRepository
+                    .GetAll()
                     .Where(x => x.UserId == user.Id)
-                    .Join(_trainingRepository.GetAll(), indicator => indicator.Date, training => training.Date, (indicator, training) => training)
+                    .Join(
+                        _trainingRepository.GetAll(),
+                        indicator => indicator.Date,
+                        training => training.Date,
+                        (indicator, training) => training)
                     .GroupBy(x => new { x.Date.Year, x.Date.Month })
                     .Select(x => (double)x.Count())
                     .ToList();
@@ -217,7 +253,7 @@ namespace WebRunApplication.Services.Implementations
                 return new BaseResponse<List<double>>
                 {
                     Data = data,
-                    StatusCode = Enums.StatusCode.OK
+                    StatusCode = Domain.Enums.StatusCode.OK
                 };
             }
             catch (Exception exception)
@@ -226,7 +262,7 @@ namespace WebRunApplication.Services.Implementations
                 return new BaseResponse<List<double>>
                 {
                     Description = exception.Message,
-                    StatusCode = Enums.StatusCode.InternalServerError
+                    StatusCode = Domain.Enums.StatusCode.InternalServerError
                 };
             }
         }
@@ -235,6 +271,7 @@ namespace WebRunApplication.Services.Implementations
         {
             try
             {
+                // todo: user может быть null
                 var user = await _userRepository.GetAll().FirstOrDefaultAsync(x => x.Login == login);
 
                 var data = _indicatorRepository.GetAll().ToList()
@@ -247,7 +284,7 @@ namespace WebRunApplication.Services.Implementations
                 return new BaseResponse<List<double>>
                 {
                     Data = data,
-                    StatusCode = Enums.StatusCode.OK
+                    StatusCode = Domain.Enums.StatusCode.OK
                 };
             }
             catch (Exception exception)
@@ -256,7 +293,7 @@ namespace WebRunApplication.Services.Implementations
                 return new BaseResponse<List<double>>
                 {
                     Description = exception.Message,
-                    StatusCode = Enums.StatusCode.InternalServerError
+                    StatusCode = Domain.Enums.StatusCode.InternalServerError
                 };
             }
         }
