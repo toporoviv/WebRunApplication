@@ -576,3 +576,7 @@ D:\Мои документы\Desktop\DA\C#\WebRunApplication\bin\Debug\net7.0\We
 D:\Мои документы\Desktop\DA\C#\WebRunApplication\bin\Debug\net7.0\WebRunApplication.Domain\bin\Debug\net8.0\WebRunApplication.runtimeconfig.json
 D:\Мои документы\Desktop\DA\C#\WebRunApplication\bin\Debug\net7.0\WebRunApplication.Domain\bin\Debug\net8.0\WebRunApplication.staticwebassets.runtime.json
 D:\Мои документы\Desktop\DA\C#\WebRunApplication\bin\Debug\net7.0\WebRunApplication.Domain\obj\Debug\net8.0\WebRunApplication.Domain.sourcelink.json
+D:\Мои документы\Desktop\DA\C#\WebRunApplication\bin\Debug\net7.0\WebRunApplication.Infrastructre\obj\Debug\net8.0\WebRunApplication.Infrastructre.sourcelink.json
+D:\Мои документы\Desktop\DA\C#\WebRunApplication\bin\Debug\net7.0\WebRunApplication.Infrastructre\obj\project.assets.json
+D:\Мои документы\Desktop\DA\C#\WebRunApplication\bin\Debug\net7.0\WebRunApplication.Infrastructre\obj\project.packagespec.json
+D:\Мои документы\Desktop\DA\C#\WebRunApplication\bin\Debug\net7.0\WebRunApplication.Infrastructre\obj\WebRunApplication.Infrastructre.csproj.nuget.dgspec.json

@@ -1,34 +1,28 @@
-﻿using WebRunApplication.Domain.Enums.DAL.Interfaces;
+﻿using WebRunApplication.Infrastructure.Interfaces;
 using WebRunApplication.Domain.Entities;
-using WebRunApplication.Domain.Enums.Interfaces;
-using WebRunApplication.Domain.Enums.Response;
-using WebRunApplication.Domain.Enums.Services.Interfaces;
 
-namespace WebRunApplication.Domain.Enums.Services.Implementations
+namespace WebRunApplication.Infrastructure
 {
-    public class DataBaseGeneratorService : IDataBaseGeneratorService
+    public class DataBaseGenerator : IDataBaseGenerator
     {
         private readonly IBaseRepository<User> _userRepository;
         private readonly IBaseRepository<Indicator> _indicatorRepository;
         private readonly IBaseRepository<Training> _trainingRepository;
         private readonly IBaseRepository<TrainingTemplate> _trainingTemplateRepository;
-        private readonly ILogger<DataBaseGeneratorService> _logger;
 
-        public DataBaseGeneratorService(
+        public DataBaseGenerator(
             IBaseRepository<User> userRepository,
             IBaseRepository<Indicator> indicatorRepository,
             IBaseRepository<Training> trainingRepository,
-            IBaseRepository<TrainingTemplate> trainingTemplateRepository,
-            ILogger<DataBaseGeneratorService> logger)
+            IBaseRepository<TrainingTemplate> trainingTemplateRepository)
         {
             _userRepository = userRepository;
             _indicatorRepository = indicatorRepository;
             _trainingRepository = trainingRepository;
             _trainingTemplateRepository = trainingTemplateRepository;
-            _logger = logger;
         }
 
-        public async Task<IBaseResponse<bool>> GenerateTrainings()
+        public async Task GenerateTrainings()
         {
             try
             {
@@ -62,21 +56,11 @@ namespace WebRunApplication.Domain.Enums.Services.Implementations
                     await _indicatorRepository.Create(indicator);
                     await _trainingRepository.Create(training);
                 }
-
-                return new BaseResponse<bool>
-                {
-                    Data = true,
-                    StatusCode = StatusCode.OK
-                };
             }
             catch (Exception exception)
             {
-                _logger.LogError(exception, $"[{nameof(DataBaseGeneratorService)}.{nameof(GenerateTrainings)}] error: {exception.Message}");
-                return new BaseResponse<bool>
-                {
-                    StatusCode = StatusCode.InternalServerError,
-                    Description = $"Внутренняя ошибка: {exception.Message}"
-                };
+                // todo: исправить exception
+                throw new Exception();
             }
         }
     }

@@ -30,7 +30,7 @@ namespace WebRunApplication.Domain.Enums.Controllers
             if (ModelState.IsValid)
             {
                 var response = await _accountService.Login(model);
-                if (response.StatusCode == Domain.Enums.StatusCode.OK)
+                if (response.StatusCode == Enums.StatusCode.OK)
                 {
                     await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme,
                         new ClaimsPrincipal(response.Data));
@@ -56,7 +56,7 @@ namespace WebRunApplication.Domain.Enums.Controllers
             if (ModelState.IsValid)
             {
                 var response = await _accountService.Register(model);
-                if (response.StatusCode == Domain.Enums.StatusCode.OK)
+                if (response.StatusCode == Enums.StatusCode.OK)
                 {
                     await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme,
                         new ClaimsPrincipal(response.Data));

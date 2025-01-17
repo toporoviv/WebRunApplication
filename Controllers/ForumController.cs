@@ -1,9 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using WebRunApplication.Domain.Entities;
 using WebRunApplication.Domain.Entities.Forum;
 using WebRunApplication.Domain.Enums.Models;
+using WebRunApplication.Infrastructure;
 
 namespace WebRunApplication.Domain.Enums.Controllers
 {
@@ -88,7 +88,7 @@ namespace WebRunApplication.Domain.Enums.Controllers
         {
             // todo: User.Identity может ли быть null в данном случае?
             // todo: user может быть null
-            var user = await _context.Users.FirstOrDefaultAsync(x => x.Login == User.Identity.Name);
+            var user = await _context.Users.FirstOrDefaultAsync(x => x.Login == User.Identity!.Name);
 
             _context.ForumMessages.Add(new ForumMessage { Date = DateTime.Now, UserId = user.Id, Message = message, ParentId = null });
             await _context.SaveChangesAsync();

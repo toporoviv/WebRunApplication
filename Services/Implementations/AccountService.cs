@@ -1,10 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
-using WebRunApplication.Domain.Enums.DAL.Interfaces;
 using WebRunApplication.Domain.Entities;
 using WebRunApplication.Domain.Enums.Models;
 using WebRunApplication.Domain.Enums.Response;
 using WebRunApplication.Domain.Enums.Services.Interfaces;
+using WebRunApplication.Infrastructure.Interfaces;
 
 namespace WebRunApplication.Domain.Enums.Services.Implementations
 {

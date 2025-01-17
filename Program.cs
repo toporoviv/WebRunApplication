@@ -1,7 +1,7 @@
-using WebRunApplication.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using WebRunApplication.Domain.Enums.Models;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using WebRunApplication.Infrastructure;
 
 namespace WebRunApplication.Domain.Enums
 {

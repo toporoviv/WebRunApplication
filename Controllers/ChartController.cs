@@ -3,8 +3,8 @@ using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Newtonsoft.Json;
-using WebRunApplication.Domain.Entities;
 using WebRunApplication.Domain.Enums.Services.Interfaces;
+using WebRunApplication.Infrastructure;
 
 namespace WebRunApplication.Domain.Enums.Controllers
 {

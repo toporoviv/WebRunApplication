@@ -1,10 +1,10 @@
-﻿using Microsoft.AspNetCore.Cors.Infrastructure;
-using WebRunApplication.Domain.Enums.DAL.Interfaces;
-using WebRunApplication.Domain.Enums.DAL.Repositories;
-using WebRunApplication.Domain.Entities;
+﻿using WebRunApplication.Domain.Entities;
 using WebRunApplication.Domain.Entities.Forum;
 using WebRunApplication.Domain.Enums.Services.Implementations;
 using WebRunApplication.Domain.Enums.Services.Interfaces;
+using WebRunApplication.Infrastructure;
+using WebRunApplication.Infrastructure.Interfaces;
+using WebRunApplication.Infrastructure.Repositories;
 
 namespace WebRunApplication.Domain.Enums.Models
 {
@@ -38,7 +38,7 @@ namespace WebRunApplication.Domain.Enums.Models
             services.AddScoped<IChartService, ChartService>();
             services.AddScoped<ITrainingService, TrainingService>();
             services.AddScoped<ITrainingTemplateService, TrainingTemplateService>();
-            services.AddScoped<IDataBaseGeneratorService, DataBaseGeneratorService>();
+            services.AddScoped<IDataBaseGenerator, Infrastructure.DataBaseGenerator>();
             services.AddScoped<IPdfService, PdfService>();
             services.AddScoped<IIndicatorService, IndicatorService>();
             services.AddScoped<ITrainingStatisticalService, TrainingStatisticalService>();

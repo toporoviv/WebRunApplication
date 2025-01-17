@@ -3,7 +3,7 @@ using WebRunApplication.Domain.Entities;
 using WebRunApplication.Domain.Entities.Forum;
 using WebRunApplication.Domain.Enums.Models;
 
-namespace WebRunApplication
+namespace WebRunApplication.Infrastructure
 {
     public class ApplicationDbContext : DbContext
     {
@@ -19,57 +19,57 @@ namespace WebRunApplication
 
             if (Users.Count() == 0)
             {
-                Users.AddRange(DataBaseGenerator.GenerateUsers());
+                Users.AddRange(Domain.Enums.Models.DataBaseGenerator.GenerateUsers());
             }
 
             if (Indicators.Count() == 0)
             {
-                Indicators.AddRange(DataBaseGenerator.GenerateIndicators());
+                Indicators.AddRange(Domain.Enums.Models.DataBaseGenerator.GenerateIndicators());
             }
 
             if (Helps.Count() == 0)
             {
-                Helps.AddRange(DataBaseGenerator.GenerateHelps());
+                Helps.AddRange(Domain.Enums.Models.DataBaseGenerator.GenerateHelps());
             }
 
             if (TemplateTypes.Count() == 0)
             {
-                TemplateTypes.AddRange(DataBaseGenerator.GenerateTemplateTypes());
+                TemplateTypes.AddRange(Domain.Enums.Models.DataBaseGenerator.GenerateTemplateTypes());
             }
 
             if (Trainings.Count() == 0)
             {
-                Trainings.AddRange(DataBaseGenerator.GenerateTrainings());
+                Trainings.AddRange(Domain.Enums.Models.DataBaseGenerator.GenerateTrainings());
             }
 
             if (TrainingTemplates.Count() == 0)
             {
-                TrainingTemplates.AddRange(DataBaseGenerator.GenerateTrainingTemplate());
+                TrainingTemplates.AddRange(Domain.Enums.Models.DataBaseGenerator.GenerateTrainingTemplate());
             }
 
             if (TrainingTypes.Count() == 0)
             {
-                TrainingTypes.AddRange(DataBaseGenerator.GenerateTrainingTypes());
+                TrainingTypes.AddRange(Domain.Enums.Models.DataBaseGenerator.GenerateTrainingTypes());
             }
 
             if (Mailings.Count() == 0)
             {
-                Mailings.AddRange(DataBaseGenerator.GenerateMailings());
+                Mailings.AddRange(Domain.Enums.Models.DataBaseGenerator.GenerateMailings());
             }
 
             if (MailingTopics.Count() == 0)
             {
-                MailingTopics.AddRange(DataBaseGenerator.GenerateMailingTopics());
+                MailingTopics.AddRange(Domain.Enums.Models.DataBaseGenerator.GenerateMailingTopics());
             }
 
             if (MailingTopicSubscribers.Count() == 0)
             {
-                MailingTopicSubscribers.AddRange(DataBaseGenerator.GenerateMailingTopicSubscribers());
+                MailingTopicSubscribers.AddRange(Domain.Enums.Models.DataBaseGenerator.GenerateMailingTopicSubscribers());
             }
 
             if (ForumMessages.Count() == 0)
             {
-                ForumMessages.AddRange(DataBaseGenerator.GenerateForumMessages());
+                ForumMessages.AddRange(Domain.Enums.Models.DataBaseGenerator.GenerateForumMessages());
             }
             
             SaveChanges();

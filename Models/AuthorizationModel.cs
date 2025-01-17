@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using WebRunApplication.Domain.Entities;
 
 namespace WebRunApplication.Domain.Enums.Models
 {

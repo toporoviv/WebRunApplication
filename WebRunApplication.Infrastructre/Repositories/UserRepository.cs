@@ -1,8 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using WebRunApplication.Domain.Enums.DAL.Interfaces;
+using WebRunApplication.Infrastructure.Interfaces;
 using WebRunApplication.Domain.Entities;
 
-namespace WebRunApplication.Domain.Enums.DAL.Repositories
+namespace WebRunApplication.Infrastructure.Repositories
 {
     public class UserRepository : IBaseRepository<User>
     {

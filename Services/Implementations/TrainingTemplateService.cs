@@ -1,9 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using WebRunApplication.Domain.Enums.DAL.Interfaces;
 using WebRunApplication.Domain.Entities;
 using WebRunApplication.Domain.Enums.Interfaces;
 using WebRunApplication.Domain.Enums.Response;
 using WebRunApplication.Domain.Enums.Services.Interfaces;
+using WebRunApplication.Infrastructure.Interfaces;
 
 namespace WebRunApplication.Domain.Enums.Services.Implementations
 {
@@ -12,7 +12,11 @@ namespace WebRunApplication.Domain.Enums.Services.Implementations
         private readonly ILogger<TrainingTemplateService> _logger;
         private readonly IBaseRepository<TrainingTemplate> _trainingTemplateRepository;
 
-        public TrainingTemplateService(ILogger<TrainingTemplateService> logger, IBaseRepository<TrainingTemplate> trainingTemplateRepository)
+        public TrainingTemplateService
+        (
+            ILogger<TrainingTemplateService> logger,
+            IBaseRepository<TrainingTemplate> trainingTemplateRepository
+        )
         {
             _logger = logger;
             _trainingTemplateRepository = trainingTemplateRepository;

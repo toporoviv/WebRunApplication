@@ -1,9 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using WebRunApplication.Domain.Enums.DAL.Interfaces;
 using WebRunApplication.Domain.Entities.Forum;
 using WebRunApplication.Domain.Enums.Interfaces;
 using WebRunApplication.Domain.Enums.Response;
 using WebRunApplication.Domain.Enums.Services.Interfaces;
+using WebRunApplication.Infrastructure.Interfaces;
 
 namespace WebRunApplication.Domain.Enums.Services.Implementations
 {

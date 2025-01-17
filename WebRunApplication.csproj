@@ -1,9 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <TargetFrameworks>net8.0</TargetFrameworks>
   </PropertyGroup>
 
   <ItemGroup>
@@ -14,17 +14,28 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Interfaces\" />
+    <Compile Remove="WebRunApplication.Domain\**" />
+    <Compile Remove="WebRunApplication.Infrastructre\**" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="wwwroot\css\MainStyle.css" />
+    <EmbeddedResource Remove="WebRunApplication.Domain\**" />
+    <EmbeddedResource Remove="WebRunApplication.Infrastructre\**" />
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Mono.Android">
-      <HintPath>E:\Visual Studio 2022\Common7\IDE\ReferenceAssemblies\Microsoft\Framework\MonoAndroid\v12.0\Mono.Android.dll</HintPath>
-    </Reference>
+    <Content Remove="WebRunApplication.Domain\**" />
+    <Content Remove="WebRunApplication.Infrastructre\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="WebRunApplication.Domain\**" />
+    <None Remove="WebRunApplication.Infrastructre\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="WebRunApplication.Domain\WebRunApplication.Domain.csproj" />
+    <ProjectReference Include="WebRunApplication.Infrastructre\WebRunApplication.Infrastructre.csproj" />
   </ItemGroup>
 
 </Project>
