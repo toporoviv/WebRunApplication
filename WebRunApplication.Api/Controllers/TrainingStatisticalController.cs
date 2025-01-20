@@ -18,7 +18,7 @@ namespace WebRunApplication.Controllers
         [HttpGet]
         public async Task<IActionResult> Index()
         {
-            var responseMailingCount = await _trainingStatisticalService.GetTotalMailingCount(User.Identity!.Name!);
+            var responseMailingCount = await _trainingStatisticalService.GetTotalMailingCountAsync(User.Identity!.Name!);
 
             if (responseMailingCount.StatusCode != Domain.Enums.StatusCode.OK)
             {
@@ -28,7 +28,7 @@ namespace WebRunApplication.Controllers
 
             ViewBag.TotalMailingCount = responseMailingCount.Data;
 
-            var responseTrainingDuration = await _trainingStatisticalService.GetTotalTrainingDuration(User.Identity.Name);
+            var responseTrainingDuration = await _trainingStatisticalService.GetTotalTrainingDurationAsync(User.Identity.Name);
 
             if (responseTrainingDuration.StatusCode != Domain.Enums.StatusCode.OK)
             {
@@ -38,7 +38,7 @@ namespace WebRunApplication.Controllers
 
             ViewBag.TotalTrainingDuration = responseTrainingDuration.Data;
 
-            var responseTrainingCount = await _trainingStatisticalService.GetTotalTrainingCount(User.Identity.Name);
+            var responseTrainingCount = await _trainingStatisticalService.GetTotalTrainingCountAsync(User.Identity.Name);
 
             if (responseTrainingCount.StatusCode != Domain.Enums.StatusCode.OK)
             {
@@ -48,7 +48,7 @@ namespace WebRunApplication.Controllers
 
             ViewBag.TotalTrainingCount = responseTrainingCount.Data;
 
-            var responseTrainingDayDuration = await _trainingStatisticalService.GetTotalTrainingDayDuration(User.Identity.Name);
+            var responseTrainingDayDuration = await _trainingStatisticalService.GetTotalTrainingDayDurationAsync(User.Identity.Name);
 
             if (responseTrainingDayDuration.StatusCode != Domain.Enums.StatusCode.OK)
             {
@@ -65,7 +65,7 @@ namespace WebRunApplication.Controllers
         public async Task<IActionResult> Statistical()
         {
             var responseMailingCount = await _trainingStatisticalService
-                .GetTotalMailingCountGroupByYearAndMonth(User.Identity!.Name!);
+                .GetTotalMailingCountGroupByYearAndMonthAsync(User.Identity!.Name!);
 
             if (responseMailingCount.StatusCode != Domain.Enums.StatusCode.OK)
             {
@@ -76,7 +76,7 @@ namespace WebRunApplication.Controllers
             ViewBag.TotalMailingCount = StatisticalCalculator.GetMovingAverages(responseMailingCount.Data);
 
             var responseTrainingDuration = await _trainingStatisticalService
-                .GetTotalTrainingDurationGroupByYearAndMonth(User.Identity.Name);
+                .GetTotalTrainingDurationGroupByYearAndMonthAsync(User.Identity.Name);
 
             if (responseTrainingDuration.StatusCode != Domain.Enums.StatusCode.OK)
             {
@@ -87,7 +87,7 @@ namespace WebRunApplication.Controllers
             ViewBag.TotalTrainingDuration = StatisticalCalculator.GetMovingAverages(responseTrainingDuration.Data);
 
             var responseTrainingCount = await _trainingStatisticalService
-                .GetTotalTrainingCountGroupByYearAndMonth(User.Identity.Name);
+                .GetTotalTrainingCountGroupByYearAndMonthAsync(User.Identity.Name);
 
             if (responseTrainingCount.StatusCode != Domain.Enums.StatusCode.OK)
             {
@@ -104,7 +104,7 @@ namespace WebRunApplication.Controllers
         public async Task<IActionResult> StatisticalWithEdgeValues()
         {
             var responseMailingCount = await _trainingStatisticalService
-                .GetTotalMailingCountGroupByYearAndMonth(User.Identity!.Name!);
+                .GetTotalMailingCountGroupByYearAndMonthAsync(User.Identity!.Name!);
 
             if (responseMailingCount.StatusCode != Domain.Enums.StatusCode.OK)
             {
@@ -121,7 +121,7 @@ namespace WebRunApplication.Controllers
                 .GetPredictiveValueByMovingAverages(totalMailingCountMovingAverages);
 
             var responseTrainingDuration = await _trainingStatisticalService
-                .GetTotalTrainingDurationGroupByYearAndMonth(User.Identity!.Name!);
+                .GetTotalTrainingDurationGroupByYearAndMonthAsync(User.Identity!.Name!);
 
             if (responseTrainingDuration.StatusCode != Domain.Enums.StatusCode.OK)
             {
@@ -138,7 +138,7 @@ namespace WebRunApplication.Controllers
                 .GetPredictiveValueByMovingAverages(totalTrainingDurationMovingAverages);
 
             var responseTrainingCount = await _trainingStatisticalService
-                .GetTotalTrainingCountGroupByYearAndMonth(User.Identity!.Name!);
+                .GetTotalTrainingCountGroupByYearAndMonthAsync(User.Identity!.Name!);
 
             if (responseTrainingCount.StatusCode != Domain.Enums.StatusCode.OK)
             {

@@ -4,27 +4,29 @@ using Microsoft.Extensions.Logging;
 using WebRunApplication.Domain.Entities;
 using WebRunApplication.Domain.Enums;
 using WebRunApplication.Infrastructure.Interfaces;
+using WebRunApplication.Services.Extensions;
 using WebRunApplication.Services.Models;
 using WebRunApplication.Services.Services.Interfaces;
 
 namespace WebRunApplication.Services.Services.Implementations
 {
-    public class AccountService : IAccountService
+    public class AccountService
+    (
+        ILogger<AccountService> logger,
+        IUserRepository userRepository
+    ) : IAccountService
     {
-        private readonly IBaseRepository<User> _userRepository;
-        private readonly ILogger<AccountService> _logger;
-
-        public AccountService(ILogger<AccountService> logger, IBaseRepository<User> userRepository)
-        {
-            _userRepository = userRepository;
-            _logger = logger;
-        }
-
-        public async Task<BaseResponse<ClaimsIdentity>> Login(AuthorizationModel model)
+        public async Task<BaseResponse<ClaimsIdentity>> LoginAsync
+        (
+            AuthorizationModel model,
+            CancellationToken cancellationToken
+        )
         {
             try
             {
-                var user = await _userRepository.GetAll().FirstOrDefaultAsync(x => x.Login == model.Login);
+                var user = (await userRepository.GetUsersAsync(cancellationToken))
+                    .FirstOrDefault(user => user.Login == model.Login);
+                
                 if (user is null)
                 {
                     return new BaseResponse<ClaimsIdentity>
@@ -51,7 +53,7 @@ namespace WebRunApplication.Services.Services.Implementations
             }
             catch(Exception exception)
             {
-                _logger.LogError(exception, $"[AccountService]: {exception.Message}");
+                logger.LogError(exception, $"[AccountService]: {exception.Message}");
 
                 return new BaseResponse<ClaimsIdentity>
                 {
@@ -61,11 +63,16 @@ namespace WebRunApplication.Services.Services.Implementations
             }
         }
 
-        public async Task<BaseResponse<ClaimsIdentity>> Register(RegisterModel model)
+        public async Task<BaseResponse<ClaimsIdentity>> RegisterAsync
+        (
+            RegisterModel model,
+            CancellationToken cancellationToken
+        )
         {
             try
             {
-                var user = await _userRepository.GetAll().FirstOrDefaultAsync(x => x.Login == model.Login);
+                var user = (await userRepository.GetUsersAsync(cancellationToken))
+                    .FirstOrDefault(user => user.Login == model.Login);
 
                 if (user is not null)
                 {
@@ -76,20 +83,7 @@ namespace WebRunApplication.Services.Services.Implementations
                     };
                 }
 
-                user = new User
-                {
-                    Login = model.Login,
-                    Password = model.Password,
-                    Age = model.Age,
-                    Weight = model.Weight,
-                    Height = model.Height,
-                    Gender = model.Gender,
-                    Role = Role.User,
-                    Email = model.Email,
-                    Fullname = model.Fullname
-                };
-
-                await _userRepository.Create(user);
+                user = await userRepository.CreateUserAsync(model.ToUserWithoutId(), cancellationToken);
 
                 var result = Authenticate(user);
 
@@ -97,12 +91,12 @@ namespace WebRunApplication.Services.Services.Implementations
                 {
                     Data = result,
                     Description = "Пользователь зарегистрирован",
-                    StatusCode = Domain.Enums.StatusCode.OK
+                    StatusCode = StatusCode.OK
                 };
             }
             catch(Exception exception)
             {
-                _logger.LogError(exception, $"[AccountService]: {exception.Message}");
+                logger.LogError(exception, $"[AccountService]: {exception.Message}");
 
                 return new BaseResponse<ClaimsIdentity>
                 {

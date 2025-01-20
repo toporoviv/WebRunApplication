@@ -12,11 +12,10 @@ namespace WebRunApplication.Services.Models
     {
         public static void InitializeRepositories(this IServiceCollection services)
         {
-            services.AddScoped<IBaseRepository<User>, UserRepository>();
             services.AddScoped<IBaseRepository<ForumMessage>, ForumMessageRepository>();
             services.AddScoped<IBaseRepository<ForumReaction>, ForumReactionRepository>();
-            services.AddScoped<IBaseRepository<Help>, HelpRepository>();
-            services.AddScoped<IBaseRepository<Mailing>, MailingRepository>();
+            services.AddScoped<IBaseRepository<HelpMessage>, HelpRepository>();
+            services.AddScoped<IBaseRepository<MailingMessage>, MailingRepository>();
             services.AddScoped<IBaseRepository<MailingTopic>, MailingTopicRepository>();
             services.AddScoped<IBaseRepository<MailingTopicSubscriber>, MailingTopicSubscriberRepository>();
             services.AddScoped<IBaseRepository<Indicator>, IndicatorRepository>();
@@ -38,7 +37,7 @@ namespace WebRunApplication.Services.Models
             services.AddScoped<IChartService, ChartService>();
             services.AddScoped<ITrainingService, TrainingService>();
             services.AddScoped<ITrainingTemplateService, TrainingTemplateService>();
-            services.AddScoped<IDataBaseGenerator, Infrastructure.DataBaseGenerator>();
+            services.AddScoped<IDataBaseGenerator, Infrastructure.DataBaseGeneratorService>();
             services.AddScoped<IPdfService, PdfService>();
             services.AddScoped<IIndicatorService, IndicatorService>();
             services.AddScoped<ITrainingStatisticalService, TrainingStatisticalService>();

@@ -37,7 +37,7 @@ namespace WebRunApplication.Controllers
         [HttpGet]
         public async Task<IActionResult> Question()
         {
-            var result = await _adminService.GetQuestions();
+            var result = await _adminService.GetQuestionsAsync();
             
             if (result.StatusCode == Domain.Enums.StatusCode.OK) 
                 return View(result.Data);
@@ -63,7 +63,7 @@ namespace WebRunApplication.Controllers
         }
         
         [HttpGet]
-        public IActionResult Answer(Help model)
+        public IActionResult Answer(HelpMessage model)
         {
             return model is null ? new EmptyResult() : View(model);
         }
@@ -71,7 +71,7 @@ namespace WebRunApplication.Controllers
         [HttpPost]
         public async Task<IActionResult> Answer(int id, string answer)
         {
-            var result = await _adminService.CreateAnswer((uint)id, answer);
+            var result = await _adminService.CreateAnswerAsync((uint)id, answer);
 
             if (result.StatusCode == Domain.Enums.StatusCode.OK) 
                 return RedirectToAction("Question", "Admin");
@@ -103,11 +103,11 @@ namespace WebRunApplication.Controllers
             // todo: нужно обработать если будет null
             var topic = (await _mailingTopicService.GetAll()).Data.FirstOrDefault(topic => topic.Id == id).Title;
 
-            var users = (await _userService.GetAll()).Data.Where(user => indexes.Contains(user.Id)).ToList();
+            var users = (await _userService.GetAllAsync()).Data.Where(user => indexes.Contains(user.Id)).ToList();
 
             await MailingTopics(users, topic, message);
 
-            var result = await _mailingService.Create(new Mailing
+            var result = await _mailingService.Create(new MailingMessage
             {
                 Date = DateTime.Now,
                 MailingTopicId = id,

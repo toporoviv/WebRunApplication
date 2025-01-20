@@ -7,42 +7,31 @@ using WebRunApplication.Services.Services.Interfaces;
 
 namespace WebRunApplication.Services.Services.Implementations
 {
-    // todo: поправить все асинхронные методы
-    public class PersonalAccountService : IPersonalAccountService
+    public class PersonalAccountService(
+        IBaseRepository<MailingTopic> mailingTopicRepository,
+        ILogger<PersonalAccountService> logger,
+        IUserRepository userRepository,
+        IBaseRepository<MailingTopicSubscriber> mailingTopicSubscriberRepository,
+        IBaseRepository<Training> trainingRepository,
+        IBaseRepository<Indicator> indicatorRepository,
+        IBaseRepository<TrainingTemplate> trainingTemplateRepository)
+    : IPersonalAccountService
     {
-        private readonly IBaseRepository<User> _userRepository;
-        private readonly IBaseRepository<Training> _trainingRepository;
-        private readonly IBaseRepository<Indicator> _indicatorRepository;
-        private readonly IBaseRepository<TrainingTemplate> _trainingTemplateRepository;
-        private readonly IBaseRepository<MailingTopic> _mailingTopicRepository;
-        private readonly IBaseRepository<MailingTopicSubscriber> _mailingTopicSubscriberRepository;
-        private readonly ILogger<PersonalAccountService> _logger;
-
-        public PersonalAccountService(
-            IBaseRepository<MailingTopic> mailingTopicRepository, ILogger<PersonalAccountService> logger,
-            IBaseRepository<User> userRepository, IBaseRepository<MailingTopicSubscriber> mailingTopicSubscriberRepository,
-            IBaseRepository<Training> trainingRepository, IBaseRepository<Indicator> indicatorRepository,
-            IBaseRepository<TrainingTemplate> trainingTemplateRepository)
-        {
-            _mailingTopicRepository = mailingTopicRepository;
-            _logger = logger;
-            _userRepository = userRepository;
-            _mailingTopicSubscriberRepository = mailingTopicSubscriberRepository;
-            _trainingRepository = trainingRepository;
-            _indicatorRepository = indicatorRepository;
-            _trainingTemplateRepository = trainingTemplateRepository;
-        }
-
-        public async Task<IBaseResponse<bool>> CreateSubscribe(string login, int[] titles)
+        public async Task<IBaseResponse<bool>> CreateSubscribeAsync
+        (
+            string login,
+            int[] titles,
+            CancellationToken cancellationToken = default
+        )
         {
             try
             {
                 // todo: user может быть null
-                var user = await _userRepository
-                    .GetAll()
-                    .FirstOrDefaultAsync(x => x.Login == login);
+                var user = (await userRepository
+                    .GetUsersAsync(cancellationToken))
+                    .FirstOrDefault(user => user.Login == login);
 
-                var ids = _mailingTopicSubscriberRepository
+                var ids = mailingTopicSubscriberRepository
                     .GetAll()
                     .Where(x => x.UserId == user.Id)
                     .Select(x => x.MailingTopicId)
@@ -55,7 +44,7 @@ namespace WebRunApplication.Services.Services.Implementations
                 // todo: можно запихать все это в таски и использовать Task.WhenAll
                 for (var i = 0; i < indexes.Count; i++)
                 {
-                    await _mailingTopicSubscriberRepository.Create(new MailingTopicSubscriber
+                    await mailingTopicSubscriberRepository.Create(new MailingTopicSubscriber
                     {
                         MailingTopicId = indexes[i],
                         UserId = user.Id
@@ -70,7 +59,7 @@ namespace WebRunApplication.Services.Services.Implementations
             }
             catch(Exception exception)
             {
-                _logger.LogError(exception, $"[{nameof(PersonalAccountService)}]: {exception.Message}");
+                logger.LogError(exception, $"[{nameof(PersonalAccountService)}]: {exception.Message}");
                 return new BaseResponse<bool>
                 {
                     Description = exception.Message,
@@ -79,11 +68,14 @@ namespace WebRunApplication.Services.Services.Implementations
             }
         }
 
-        public async Task<IBaseResponse<List<MailingTopic>>> GetMailingTopics()
+        public async Task<IBaseResponse<List<MailingTopic>>> GetMailingTopicsAsync
+        (
+            CancellationToken cancellationToken = default
+        )
         {
             try
             {
-                var list = await _mailingTopicRepository.GetAll().ToListAsync();
+                var list = await mailingTopicRepository.GetAll().ToListAsync();
 
                 return new BaseResponse<List<MailingTopic>>
                 {
@@ -93,7 +85,7 @@ namespace WebRunApplication.Services.Services.Implementations
             }
             catch(Exception exception)
             {
-                _logger.LogError(exception, $"[{nameof(PersonalAccountService)}]: {exception.Message}");
+                logger.LogError(exception, $"[{nameof(PersonalAccountService)}]: {exception.Message}");
                 return new BaseResponse<List<MailingTopic>>
                 {
                     Description = exception.Message,
@@ -102,43 +94,50 @@ namespace WebRunApplication.Services.Services.Implementations
             }
         }
 
-        public async Task<IBaseResponse<List<TrainingInformation>>> GetTrainings(string login)
+        public async Task<IBaseResponse<List<TrainingInformation>>> GetTrainingsAsync
+        (
+            string login,
+            CancellationToken cancellationToken = default
+        )
         {
             try
             {
-                var user = await _userRepository.GetAll().FirstOrDefaultAsync(x => x.Login == login);
+                var user = (await userRepository
+                    .GetUsersAsync(cancellationToken))
+                    .FirstOrDefault(user => user.Login == login);
 
-                var trainings = await _indicatorRepository
+                var trainings = await indicatorRepository
                     .GetAll()
-                    .Where(ind => ind.UserId == user.Id)
+                    .Where(indicator => indicator.UserId == user.Id)
                     .Join(
-                        _trainingRepository.GetAll(),
-                        ind => ind.Date,
-                        train => train.Date,
-                        (ind, train) => new { ind, train }
+                        trainingRepository.GetAll(),
+                        indicator => indicator.Date,
+                        training => training.Date,
+                        (indicator, training) => new { Indicator = indicator, Training = training }
                     )
                     .Join(
-                        _trainingTemplateRepository.GetAll(),
-                        selector => selector.train.TrainTemplateId,
+                        trainingTemplateRepository.GetAll(),
+                        selector => selector.Training.TrainTemplateId,
                         template => template.Id, 
-                        (selector, template) => new { selector.ind, template.Title }
+                        (selector, template) => new { Indicator = selector.Indicator, template.Title }
                     )
                     .Select(result => new TrainingInformation
                     {
-                        Id = result.ind.Id,
-                        AveragePulse = result.ind.AveragePulse,
-                        MaximumPulse = result.ind.MaximumPulse,
-                        MinimumPulse = result.ind.MinimumPulse,
-                        Steps = result.ind.Steps,
-                        AverageSpeed = result.ind.AverageSpeed,
+                        Id = result.Indicator.Id,
+                        AveragePulse = result.Indicator.AveragePulse,
+                        MaximumPulse = result.Indicator.MaximumPulse,
+                        MinimumPulse = result.Indicator.MinimumPulse,
+                        Steps = result.Indicator.Steps,
+                        AverageSpeed = result.Indicator.AverageSpeed,
                         Title = result.Title,
-                        Calories = result.ind.Calories,
-                        Date = result.ind.Date,
-                        Duration = result.ind.Duration,
-                        Pressure = result.ind.Pressure,
-                        UserId = result.ind.UserId
+                        Calories = result.Indicator.Calories,
+                        Date = result.Indicator.Date,
+                        Duration = result.Indicator.Duration,
+                        DiastolicPressure= result.Indicator.DiastolicPressure,
+                        SystolicPressure = result.Indicator.SystolicPressure,
+                        UserId = result.Indicator.UserId
                     })
-                    .ToListAsync();
+                    .ToListAsync(cancellationToken);
 
                 return new BaseResponse<List<TrainingInformation>>
                 {
@@ -148,7 +147,7 @@ namespace WebRunApplication.Services.Services.Implementations
             }
             catch(Exception exception)
             {
-                _logger.LogError(exception, $"[{nameof(PersonalAccountService)}]: {exception.Message}");
+                logger.LogError(exception, $"[{nameof(PersonalAccountService)}]: {exception.Message}");
                 return new BaseResponse<List<TrainingInformation>>
                 {
                     Description = exception.Message,

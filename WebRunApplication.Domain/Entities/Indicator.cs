@@ -7,9 +7,10 @@ public class Indicator
     public int UserId { get; set; }
 
     public DateTime Date { get; set; }
-        
-    // todo: давление одним числом представить нельзя(
-    public int? Pressure { get; set; }
+    
+    public int? SystolicPressure { get; set; }
+    
+    public int? DiastolicPressure { get; set; }
 
     public TimeSpan Duration { get; set; }
 

@@ -10,21 +10,21 @@ namespace WebRunApplication.Services.Services.Implementations
     public class HelpService : IHelpService
     {
         private readonly ILogger<HelpService> _logger;
-        private readonly IBaseRepository<Help> _helpRepository;
+        private readonly IBaseRepository<HelpMessage> _helpRepository;
 
-        public HelpService(ILogger<HelpService> logger, IBaseRepository<Help> helpRepository)
+        public HelpService(ILogger<HelpService> logger, IBaseRepository<HelpMessage> helpRepository)
         {
             _logger = logger;
             _helpRepository = helpRepository;
         }
 
-        public async Task<IBaseResponse<Help>> Create(Help model)
+        public async Task<IBaseResponse<HelpMessage>> Create(HelpMessage model)
         {
             try
             {
                 await _helpRepository.Create(model);
 
-                return new BaseResponse<Help>
+                return new BaseResponse<HelpMessage>
                 {
                     Data = model,
                     StatusCode = StatusCode.OK,
@@ -33,7 +33,7 @@ namespace WebRunApplication.Services.Services.Implementations
             catch (Exception exception)
             {
                 _logger.LogError(exception, $"[{nameof(HelpService)}.{nameof(Create)}] error: {exception.Message}");
-                return new BaseResponse<Help>()
+                return new BaseResponse<HelpMessage>()
                 {
                     StatusCode = StatusCode.InternalServerError,
                     Description = $"Внутренняя ошибка: {exception.Message}"
@@ -75,14 +75,14 @@ namespace WebRunApplication.Services.Services.Implementations
             }
         }
 
-        public async Task<IBaseResponse<IEnumerable<Help>>> GetAll()
+        public async Task<IBaseResponse<IEnumerable<HelpMessage>>> GetAll()
         {
             try
             {
                 var helps = await _helpRepository.GetAll().ToListAsync();
                 _logger.LogInformation($"[{nameof(HelpService)}.{nameof(GetAll)}] получено вопросов {helps.Count}");
 
-                return new BaseResponse<IEnumerable<Help>>
+                return new BaseResponse<IEnumerable<HelpMessage>>
                 {
                     Data = helps,
                     StatusCode = StatusCode.OK,
@@ -91,7 +91,7 @@ namespace WebRunApplication.Services.Services.Implementations
             catch (Exception exception)
             {
                 _logger.LogError(exception, $"[{nameof(HelpService)}.{nameof(GetAll)}] error: {exception.Message}");
-                return new BaseResponse<IEnumerable<Help>>
+                return new BaseResponse<IEnumerable<HelpMessage>>
                 {
                     StatusCode = StatusCode.InternalServerError,
                     Description = $"Внутренняя ошибка: {exception.Message}"

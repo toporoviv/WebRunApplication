@@ -7,9 +7,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebRunApplication.Api", "We
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebRunApplication.Domain", "WebRunApplication.Domain\WebRunApplication.Domain.csproj", "{80D66236-89B8-4914-AB50-215990E2ECAD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebRunApplication.Infrastructre", "WebRunApplication.Infrastructre\WebRunApplication.Infrastructre.csproj", "{ED18913F-33A3-4527-BAC4-3189BBE11301}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebRunApplication.Infrastructure", "WebRunApplication.Infrastructure\WebRunApplication.Infrastructure.csproj", "{ED18913F-33A3-4527-BAC4-3189BBE11301}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebRunApplication.Services", "WebRunApplication.Services\WebRunApplication.Services.csproj", "{DBEAE454-37B7-46DA-9B46-17EFA7AD33E9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebRunApplication.DbGenerator", "WebRunApplication.DbGenerator\WebRunApplication.DbGenerator.csproj", "{167B2839-2B15-44F5-B785-5741F99FB9E7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -36,5 +38,9 @@ Global
 		{DBEAE454-37B7-46DA-9B46-17EFA7AD33E9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DBEAE454-37B7-46DA-9B46-17EFA7AD33E9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DBEAE454-37B7-46DA-9B46-17EFA7AD33E9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{167B2839-2B15-44F5-B785-5741F99FB9E7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{167B2839-2B15-44F5-B785-5741F99FB9E7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{167B2839-2B15-44F5-B785-5741F99FB9E7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{167B2839-2B15-44F5-B785-5741F99FB9E7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

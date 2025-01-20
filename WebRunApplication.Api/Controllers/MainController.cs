@@ -37,11 +37,11 @@ namespace WebRunApplication.Controllers
         [HttpGet]
         public async Task<IActionResult> PersonalAccount()
         {
-            var users = await _userService.GetAll();
+            var users = await _userService.GetAllAsync();
             
             // todo: user может быть null
             var user = users.Data.FirstOrDefault(x => x.Login == User.Identity!.Name);
-            var result = await _personalAccountService.GetTrainings(user.Login);
+            var result = await _personalAccountService.GetTrainingsAsync(user.Login);
 
             if (result.StatusCode != Domain.Enums.StatusCode.OK)
             {
@@ -56,7 +56,7 @@ namespace WebRunApplication.Controllers
                 User = user
             };
 
-            var dictResult = (await _adminService.GetTopicsInformation()).Data;
+            var dictResult = (await _adminService.GetTopicsInformationAsync()).Data;
             // todo: страшно
             ViewBag.TitlesDictionary = new Dictionary<string, (int, int, int)>(dictResult);
 
@@ -71,7 +71,7 @@ namespace WebRunApplication.Controllers
         {
             string? message = Request.Form["message"];
 
-            var user = (await _userService.GetAll()).Data.FirstOrDefault(u => u.Login == User.Identity.Name);
+            var user = (await _userService.GetAllAsync()).Data.FirstOrDefault(u => u.Login == User.Identity.Name);
             
             // todo: вынести в конфиг
             var result = await _mailSenderService.SendMessage(
@@ -89,7 +89,7 @@ namespace WebRunApplication.Controllers
         [HttpGet]
         public async Task<IActionResult> Subscribe()
         {
-            var result = await _personalAccountService.GetMailingTopics();
+            var result = await _personalAccountService.GetMailingTopicsAsync();
 
             if (result.StatusCode == Domain.Enums.StatusCode.OK)
             {
@@ -106,7 +106,7 @@ namespace WebRunApplication.Controllers
         [HttpPost]
         public async Task<IActionResult> Subscribe(int[] titles)
         {
-            var result = await _personalAccountService.CreateSubscribe(User.Identity.Name, titles);
+            var result = await _personalAccountService.CreateSubscribeAsync(User.Identity.Name, titles);
 
             if (!result.Data) 
                 ModelState.AddModelError("", result.Description);

@@ -2,7 +2,7 @@
 
 namespace WebRunApplication.Services.Services.Interfaces
 {
-    public interface IHelpService : IBaseService<Help>
+    public interface IHelpService : IBaseService<HelpMessage>
     {
     }
 }

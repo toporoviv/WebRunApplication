@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\WebRunApplication.Infrastructre\WebRunApplication.Infrastructre.csproj" />
+    <ProjectReference Include="..\WebRunApplication.Infrastructure\WebRunApplication.Infrastructure.csproj" />
     <ProjectReference Include="..\WebRunApplication.Domain\WebRunApplication.Domain.csproj" />
     <ProjectReference Include="..\WebRunApplication.Services\WebRunApplication.Services.csproj" />
   </ItemGroup>

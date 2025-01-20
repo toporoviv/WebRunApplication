@@ -10,21 +10,21 @@ namespace WebRunApplication.Services.Services.Implementations
     public class MailingService : IMailingService
     {
         private readonly ILogger<MailingService> _logger;
-        private readonly IBaseRepository<Mailing> _mailingRepository;
+        private readonly IBaseRepository<MailingMessage> _mailingRepository;
 
-        public MailingService(ILogger<MailingService> logger, IBaseRepository<Mailing> mailingRepository)
+        public MailingService(ILogger<MailingService> logger, IBaseRepository<MailingMessage> mailingRepository)
         {
             _logger = logger;
             _mailingRepository = mailingRepository;
         }
 
-        public async Task<IBaseResponse<Mailing>> Create(Mailing model)
+        public async Task<IBaseResponse<MailingMessage>> Create(MailingMessage model)
         {
             try
             {
                 await _mailingRepository.Create(model);
 
-                return new BaseResponse<Mailing>
+                return new BaseResponse<MailingMessage>
                 {
                     Data = model,
                     StatusCode = StatusCode.OK,
@@ -33,7 +33,7 @@ namespace WebRunApplication.Services.Services.Implementations
             catch(Exception exception)
             {
                 _logger.LogError(exception, $"[{nameof(MailingService)}.{nameof(Create)}] error: {exception.Message}");
-                return new BaseResponse<Mailing>()
+                return new BaseResponse<MailingMessage>()
                 {
                     StatusCode = StatusCode.InternalServerError,
                     Description = $"Внутренняя ошибка: {exception.Message}"
@@ -75,14 +75,14 @@ namespace WebRunApplication.Services.Services.Implementations
             }
         }
 
-        public async Task<IBaseResponse<IEnumerable<Mailing>>> GetAll()
+        public async Task<IBaseResponse<IEnumerable<MailingMessage>>> GetAll()
         {
             try
             {
                 var mailings = await _mailingRepository.GetAll().ToListAsync();
                 _logger.LogInformation($"[{nameof(MailingService)}.{nameof(GetAll)}] получено рассылок {mailings.Count}");
 
-                return new BaseResponse<IEnumerable<Mailing>>
+                return new BaseResponse<IEnumerable<MailingMessage>>
                 {
                     Data = mailings,
                     StatusCode = StatusCode.OK,
@@ -91,7 +91,7 @@ namespace WebRunApplication.Services.Services.Implementations
             catch(Exception exception)
             {
                 _logger.LogError(exception, $"[{nameof(MailingService)}.{nameof(GetAll)}] error: {exception.Message}");
-                return new BaseResponse<IEnumerable<Mailing>>
+                return new BaseResponse<IEnumerable<MailingMessage>>
                 {
                     StatusCode = StatusCode.InternalServerError,
                     Description = $"Внутренняя ошибка: {exception.Message}"

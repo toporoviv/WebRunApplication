@@ -7,22 +7,19 @@ using WebRunApplication.Services.Services.Interfaces;
 
 namespace WebRunApplication.Services.Services.Implementations
 {
-    public class UserService : IUserService
+    internal class UserService
+    (
+        ILogger<UserService> logger,
+        IUserRepository userRepository
+    ) : IUserService
     {
-        private readonly ILogger<UserService> _logger;
-        private readonly IBaseRepository<User> _userRepository;
-
-        public UserService(ILogger<UserService> logger, IBaseRepository<User> userRepository)
-        {
-            _logger = logger;
-            _userRepository = userRepository;        
-        }
-
-        public async Task<IBaseResponse<User>> Create(User model)
+        public async Task<IBaseResponse<User>> CreateAsync(User model, CancellationToken cancellationToken)
         {
             try
             {
-                var user = await _userRepository.GetAll().FirstOrDefaultAsync(x => x.Login == model.Login);
+                var user = (await userRepository.GetUsersAsync(cancellationToken))
+                    .FirstOrDefault(x => x.Login == model.Login);
+                
                 if (user is not null)
                 {
                     return new BaseResponse<User>()
@@ -32,7 +29,18 @@ namespace WebRunApplication.Services.Services.Implementations
                     };
                 }
 
-                await _userRepository.Create(model);
+                await userRepository.CreateUserAsync(new Infrastructure.Models.User
+                {
+                    Age = model.Age,
+                    Email = model.Email,
+                    Fullname = model.Fullname,
+                    Gender = model.Gender,
+                    Height = model.Height,
+                    Login = model.Login,
+                    Password = model.Password,
+                    Weight = model.Weight,
+                    Role = model.Role
+                }, cancellationToken);
 
                 return new BaseResponse<User>()
                 {
@@ -43,7 +51,7 @@ namespace WebRunApplication.Services.Services.Implementations
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"[{nameof(UserService)}.{nameof(Create)}] error: {ex.Message}");
+                logger.LogError(ex, $"[{nameof(UserService)}.{nameof(CreateAsync)}] error: {ex.Message}");
                 return new BaseResponse<User>()
                 {
                     StatusCode = StatusCode.InternalServerError,
@@ -52,13 +60,13 @@ namespace WebRunApplication.Services.Services.Implementations
             }
         }
 
-        public async Task<IBaseResponse<IEnumerable<User>>> GetAll()
+        public async Task<IBaseResponse<IEnumerable<User>>> GetAllAsync(CancellationToken cancellationToken)
         {
             try
             {
-                var users = await _userRepository.GetAll().ToListAsync();
+                var users = (await userRepository.GetUsersAsync(cancellationToken)).ToList();
 
-                _logger.LogInformation($"[{nameof(UserService)}.{nameof(GetAll)}] получено элементов {users.Count}");
+                logger.LogInformation($"[{nameof(UserService)}.{nameof(GetAllAsync)}] получено элементов {users.Count}");
                 return new BaseResponse<IEnumerable<User>>()
                 {
                     Data = users,
@@ -67,8 +75,8 @@ namespace WebRunApplication.Services.Services.Implementations
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"[{nameof(UserService)}.{nameof(GetAll)}] error: {ex.Message}");
-                return new BaseResponse<IEnumerable<User>>()
+                logger.LogError(ex, $"[{nameof(UserService)}.{nameof(GetAllAsync)}] error: {ex.Message}");
+                return new BaseResponse<IEnumerable<User>>
                 {
                     StatusCode = StatusCode.InternalServerError,
                     Description = $"Внутренняя ошибка: {ex.Message}"
@@ -76,11 +84,13 @@ namespace WebRunApplication.Services.Services.Implementations
             }
         }
 
-        public async Task<IBaseResponse<bool>> Delete(long id)
+        public async Task<IBaseResponse<bool>> DeleteAsync(int id, CancellationToken cancellationToken)
         {
             try
             {
-                var user = await _userRepository.GetAll().FirstOrDefaultAsync(x => x.Id == id);
+                var user = (await userRepository.GetUsersAsync(cancellationToken))
+                    .FirstOrDefault(user => user.Id == id);
+                
                 if (user is null)
                 {
                     return new BaseResponse<bool>
@@ -90,8 +100,8 @@ namespace WebRunApplication.Services.Services.Implementations
                     };
                 }
 
-                await _userRepository.Delete(user);
-                _logger.LogInformation($"[{nameof(UserService)}.{nameof(Delete)}] пользователь удален");
+                await userRepository.DeleteUserByIdAsync(user.Id, cancellationToken);
+                logger.LogInformation($"[{nameof(UserService)}.{nameof(DeleteAsync)}] пользователь удален");
 
                 return new BaseResponse<bool>
                 {
@@ -101,7 +111,7 @@ namespace WebRunApplication.Services.Services.Implementations
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"[{nameof(UserService)}.{nameof(Delete)}] error: {ex.Message}");
+                logger.LogError(ex, $"[{nameof(UserService)}.{nameof(DeleteAsync)}] error: {ex.Message}");
                 return new BaseResponse<bool>()
                 {
                     StatusCode = StatusCode.InternalServerError,

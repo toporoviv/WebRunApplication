@@ -5,16 +5,40 @@ namespace WebRunApplication.Services.Services.Interfaces
 {
     public interface IPdfService
     {
-        Task<IBaseResponse<FileResultInformation>> GetIndicatorsPdf(string exportData,
+        Task<IBaseResponse<FileResultInformation>> GetIndicatorsPdfAsync
+        (
+            string exportData,
             List<Indicator> userIndicators,
-            List<IndicatorViewModel> indicatorsResults);
+            List<IndicatorViewModel> indicatorsResults,
+            CancellationToken cancellationToken = default
+        );
 
-        Task<IBaseResponse<FileResultInformation>> GetCurrentTrainingInformationPdf(int trainingTemplateId, string userLogin, string fileName);
+        Task<IBaseResponse<FileResultInformation>> GetCurrentTrainingInformationPdfAsync
+        (
+            int trainingTemplateId,
+            string userLogin,
+            string fileName,
+            CancellationToken cancellationToken = default
+        );
 
-        Task<IBaseResponse<FileResultInformation>> GetTotalTrainingInformationPdf(string userLogin, TimeInterval timeInterval, string fileName);
+        Task<IBaseResponse<FileResultInformation>> GetTotalTrainingInformationPdfAsync
+        (
+            string userLogin,
+            TimeInterval timeInterval,
+            string fileName,
+            CancellationToken cancellationToken = default
+        );
 
-        Task<List<IndicatorViewModel>> GetIndicatorResults(string login);
+        Task<List<IndicatorViewModel>> GetIndicatorResultsAsync
+        (
+            string login,
+            CancellationToken cancellationToken = default
+        );
 
-        Task<List<Indicator>> GetUserIndicators(string login);
+        Task<List<Indicator>> GetUserIndicatorsAsync
+        (
+            string login,
+            CancellationToken cancellationToken = default
+        );
     }
 }

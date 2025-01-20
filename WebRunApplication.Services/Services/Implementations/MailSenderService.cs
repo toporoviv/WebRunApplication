@@ -8,10 +8,10 @@ namespace WebRunApplication.Services.Services.Implementations
 {
     public class MailSenderService : IMailSenderService
     {
-        private readonly IBaseRepository<Help> _helpRepository;
+        private readonly IBaseRepository<HelpMessage> _helpRepository;
         private readonly ILogger<MailSenderService> _logger;
 
-        public MailSenderService(IBaseRepository<Help> helpRepository, ILogger<MailSenderService> logger)
+        public MailSenderService(IBaseRepository<HelpMessage> helpRepository, ILogger<MailSenderService> logger)
         {
             _helpRepository = helpRepository;
             _logger = logger;
@@ -26,7 +26,7 @@ namespace WebRunApplication.Services.Services.Implementations
 
                 await mailSender.Send(topic, message);
 
-                await _helpRepository.Create(new Help
+                await _helpRepository.Create(new HelpMessage
                 {
                     Date = DateTime.Now,
                     UserId = (int)userId,

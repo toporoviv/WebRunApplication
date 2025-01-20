@@ -18,8 +18,14 @@ namespace WebRunApplication.Domain.Entities
 
         public Gender Gender { get; set; }
 
+        /// <summary>
+        /// Вес в кг
+        /// </summary>
         public uint Weight { get; set; }
 
+        /// <summary>
+        /// Рост в см
+        /// </summary>
         public uint Height { get; set; }
 
         public Role Role { get; set; }

@@ -4,10 +4,13 @@ namespace WebRunApplication.Services.Services.Interfaces
 {
     public interface IAdminService
     {
-        Task<IBaseResponse<List<HelpViewModel>>> GetQuestions();
+        Task<IBaseResponse<List<HelpMessageViewModel>>> GetQuestionsAsync(CancellationToken cancellationToken = default);
 
-        Task<IBaseResponse<bool>> CreateAnswer(uint id, string answer);
+        Task<IBaseResponse<bool>> CreateAnswerAsync(uint id, string answer, CancellationToken cancellationToken = default);
 
-        Task<IBaseResponse<Dictionary<string, (int, int, int)>>> GetTopicsInformation();
+        Task<IBaseResponse<Dictionary<string, (int, int, int)>>> GetTopicsInformationAsync
+        (
+            CancellationToken cancellationToken = default
+        );
     }
 }

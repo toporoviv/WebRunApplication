@@ -5,8 +5,16 @@ namespace WebRunApplication.Services.Services.Interfaces
 {
     public interface IAccountService
     {
-        Task<BaseResponse<ClaimsIdentity>> Login(AuthorizationModel model);
+        Task<BaseResponse<ClaimsIdentity>> LoginAsync
+        (
+            AuthorizationModel model,
+            CancellationToken cancellationToken = default
+        );
 
-        Task<BaseResponse<ClaimsIdentity>> Register(RegisterModel model);
+        Task<BaseResponse<ClaimsIdentity>> RegisterAsync
+        (
+            RegisterModel model,
+            CancellationToken cancellationToken = default
+        );
     }
 }

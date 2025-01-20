@@ -31,8 +31,8 @@ namespace WebRunApplication.Controllers
         [HttpGet]
         public async Task<IActionResult> Index()
         {
-            ViewBag.UserIndicators = await _pdfService.GetUserIndicators(User.Identity!.Name!);
-            ViewBag.UserIndicatorsResults = await _pdfService.GetIndicatorResults(User.Identity!.Name!);
+            ViewBag.UserIndicators = await _pdfService.GetUserIndicatorsAsync(User.Identity!.Name!);
+            ViewBag.UserIndicatorsResults = await _pdfService.GetIndicatorResultsAsync(User.Identity!.Name!);
 
             return View();
         }
@@ -58,7 +58,7 @@ namespace WebRunApplication.Controllers
         [HttpPost]
         public async Task<IActionResult> ViewTraining(int id)
         {
-            var response = await _pdfService.GetCurrentTrainingInformationPdf(id, User.Identity!.Name!, "TrainingInformation.pdf");
+            var response = await _pdfService.GetCurrentTrainingInformationPdfAsync(id, User.Identity!.Name!, "TrainingInformation.pdf");
 
             if (response.StatusCode != Domain.Enums.StatusCode.OK)
             {
@@ -80,7 +80,7 @@ namespace WebRunApplication.Controllers
         [HttpPost]
         public async Task<IActionResult> TotalTrainingInformation(TimeInterval timeInterval)
         {
-            var response = await _pdfService.GetTotalTrainingInformationPdf(
+            var response = await _pdfService.GetTotalTrainingInformationPdfAsync(
                 User.Identity!.Name!, 
                 timeInterval, "TotalTrainingInformation.pdf"
             );
@@ -100,10 +100,10 @@ namespace WebRunApplication.Controllers
         [HttpPost]
         public async Task<IActionResult> ExportIndicatorsPdf(string ExportData)
         {
-            var userIndicators = await _pdfService.GetUserIndicators(User.Identity!.Name!);
-            var indicators = await _pdfService.GetIndicatorResults(User.Identity!.Name!);
+            var userIndicators = await _pdfService.GetUserIndicatorsAsync(User.Identity!.Name!);
+            var indicators = await _pdfService.GetIndicatorResultsAsync(User.Identity!.Name!);
 
-            var indicatorPdfResponse = await _pdfService.GetIndicatorsPdf(
+            var indicatorPdfResponse = await _pdfService.GetIndicatorsPdfAsync(
                 "ExportData.pdf",
                 userIndicators,
                 indicators

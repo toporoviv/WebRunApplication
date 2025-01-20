@@ -7,43 +7,33 @@ using WebRunApplication.Services.Services.Interfaces;
 
 namespace WebRunApplication.Services.Services.Implementations
 {
-    public class TrainingStatisticalService : ITrainingStatisticalService
+    // todo: логин в каждом методе нужно провалидировать
+    public class TrainingStatisticalService
+    (
+        IBaseRepository<Indicator> indicatorRepository,
+        IBaseRepository<Training> trainingRepository,
+        IUserRepository userRepository,
+        IBaseRepository<TrainingTemplate> trainingTemplateRepository,
+        IBaseRepository<MailingMessage> mailingRepository,
+        ILogger<TrainingStatisticalService> logger
+    ) : ITrainingStatisticalService
     {
-        private readonly IBaseRepository<Indicator> _indicatorRepository;
-        private readonly IBaseRepository<Training> _trainingRepository;
-        private readonly IBaseRepository<User> _userRepository;
-        
         // todo: _trainingTemplateRepository не используется((
-        private readonly IBaseRepository<TrainingTemplate> _trainingTemplateRepository;
-        private readonly IBaseRepository<Mailing> _mailingRepository;
-        private readonly ILogger<TrainingStatisticalService> _logger;
+        private readonly IBaseRepository<TrainingTemplate> _trainingTemplateRepository = trainingTemplateRepository;
 
-        public TrainingStatisticalService
+        public async Task<IBaseResponse<List<TrainingStatisticalMailingCount>>> GetTotalMailingCountAsync
         (
-            IBaseRepository<Indicator> indicatorRepository,
-            IBaseRepository<Training> trainingRepository,
-            IBaseRepository<User> userRepository,
-            IBaseRepository<TrainingTemplate> trainingTemplateRepository,
-            IBaseRepository<Mailing> mailingRepository,
-            ILogger<TrainingStatisticalService> logger
+            string login,
+            CancellationToken cancellationToken
         )
-        {
-            _indicatorRepository = indicatorRepository;
-            _trainingRepository = trainingRepository;
-            _userRepository = userRepository;
-            _trainingTemplateRepository = trainingTemplateRepository;
-            _mailingRepository = mailingRepository;
-            _logger = logger;
-        }
-
-        public async Task<IBaseResponse<List<TrainingStatisticalMailingCount>>> GetTotalMailingCount(string login)
         {
             try
             {
                 // todo: пересмотреть логику + юзер не используется + user может быть null
-                var user = await _userRepository.GetAll().FirstOrDefaultAsync(x => x.Login == login);
+                var user = (await userRepository.GetUsersAsync(cancellationToken))
+                    .FirstOrDefault(user => user.Login == login);
 
-                var data = _mailingRepository.GetAll()
+                var data = mailingRepository.GetAll()
                 .GroupBy(x => x.Date)
                 .Select(x => new TrainingStatisticalMailingCount
                 {
@@ -61,7 +51,7 @@ namespace WebRunApplication.Services.Services.Implementations
             }
             catch(Exception exception)
             {
-                _logger.LogError(exception, $"[{nameof(TrainingStatisticalService)}.{nameof(GetTotalMailingCount)}]: {exception.Message}");
+                logger.LogError(exception, $"[{nameof(TrainingStatisticalService)}.{nameof(GetTotalMailingCountAsync)}]: {exception.Message}");
                 return new BaseResponse<List<TrainingStatisticalMailingCount>>
                 {
                     Description = exception.Message,
@@ -70,17 +60,22 @@ namespace WebRunApplication.Services.Services.Implementations
             }
         }
 
-        public async Task<IBaseResponse<List<TrainingStatisticalCountViewModel>>> GetTotalTrainingCount(string login)
+        public async Task<IBaseResponse<List<TrainingStatisticalCountViewModel>>> GetTotalTrainingCountAsync
+        (
+            string login,
+            CancellationToken cancellationToken
+        )
         {
             try
             {
                 // todo: user может быть null
-                var user = await _userRepository.GetAll().FirstOrDefaultAsync(x => x.Login == login);
+                var user = (await userRepository.GetUsersAsync(cancellationToken))
+                    .FirstOrDefault(user => user.Login == login);
 
-                var data = _indicatorRepository.GetAll()
+                var data = indicatorRepository.GetAll()
                     .Where(x => x.UserId == user.Id)
                     .Join(
-                        _trainingRepository.GetAll(),
+                        trainingRepository.GetAll(),
                         indicator => indicator.Date,
                         training => training.Date,
                         (indicator, training) => training)
@@ -101,9 +96,9 @@ namespace WebRunApplication.Services.Services.Implementations
             }
             catch(Exception exception)
             {
-                _logger.LogError(
+                logger.LogError(
                     exception, 
-                    $"[{nameof(TrainingStatisticalService)}.{nameof(GetTotalTrainingCount)}]: {exception.Message}"
+                    $"[{nameof(TrainingStatisticalService)}.{nameof(GetTotalTrainingCountAsync)}]: {exception.Message}"
                 );
                 
                 return new BaseResponse<List<TrainingStatisticalCountViewModel>>
@@ -114,17 +109,22 @@ namespace WebRunApplication.Services.Services.Implementations
             }
         }
 
-        public async Task<IBaseResponse<List<TrainingStatisticalTotalDurationView>>> GetTotalTrainingDayDuration(string login)
+        public async Task<IBaseResponse<List<TrainingStatisticalTotalDurationView>>> GetTotalTrainingDayDurationAsync
+        (
+            string login,
+            CancellationToken cancellationToken
+        )
         {
             try
             {
                 // todo: user может быть null
-                var user = await _userRepository.GetAll().FirstOrDefaultAsync(x => x.Login == login);
+                var user = (await userRepository.GetUsersAsync(cancellationToken))
+                    .FirstOrDefault(user => user.Login == login);
 
-                var data = _indicatorRepository.GetAll().ToList()
+                var data = indicatorRepository.GetAll().ToList()
                     .Where(x => x.UserId == user.Id)
                     .Join(
-                        _trainingRepository.GetAll().ToList(),
+                        trainingRepository.GetAll().ToList(),
                         indicator => indicator.Date,
                         training => training.Date,
                         (_, training) => training)
@@ -145,7 +145,7 @@ namespace WebRunApplication.Services.Services.Implementations
             }
             catch (Exception exception)
             {
-                _logger.LogError(exception, $"[{nameof(TrainingStatisticalService)}.{nameof(GetTotalTrainingDayDuration)}]: {exception.Message}");
+                logger.LogError(exception, $"[{nameof(TrainingStatisticalService)}.{nameof(GetTotalTrainingDayDurationAsync)}]: {exception.Message}");
                 return new BaseResponse<List<TrainingStatisticalTotalDurationView>>
                 {
                     Description = exception.Message,
@@ -154,17 +154,22 @@ namespace WebRunApplication.Services.Services.Implementations
             }
         }
 
-        public async Task<IBaseResponse<List<TrainingStatisticalTotalDurationView>>> GetTotalTrainingDuration(string login)
+        public async Task<IBaseResponse<List<TrainingStatisticalTotalDurationView>>> GetTotalTrainingDurationAsync
+        (
+            string login,
+            CancellationToken cancellationToken
+        )
         {
             try
             {
                 // todo: user может быть null
-                var user = await _userRepository.GetAll().FirstOrDefaultAsync(x => x.Login == login);
+                var user = (await userRepository.GetUsersAsync(cancellationToken))
+                    .FirstOrDefault(user => user.Login == login);
 
-                var data = _indicatorRepository.GetAll().ToList()
+                var data = indicatorRepository.GetAll().ToList()
                     .Where(x => x.UserId == user.Id)
                     .Join(
-                        _trainingRepository.GetAll().ToList(),
+                        trainingRepository.GetAll().ToList(),
                         indicator => indicator.Date,
                         training => training.Date, 
                         (_, training) => training)
@@ -185,9 +190,9 @@ namespace WebRunApplication.Services.Services.Implementations
             }
             catch (Exception exception)
             {
-                _logger.LogError(
+                logger.LogError(
                     exception, 
-                    $"[{nameof(TrainingStatisticalService)}.{nameof(GetTotalTrainingDuration)}]: {exception.Message}"
+                    $"[{nameof(TrainingStatisticalService)}.{nameof(GetTotalTrainingDurationAsync)}]: {exception.Message}"
                 );
                 return new BaseResponse<List<TrainingStatisticalTotalDurationView>>
                 {
@@ -197,14 +202,19 @@ namespace WebRunApplication.Services.Services.Implementations
             }
         }
 
-        public async Task<IBaseResponse<List<double>>> GetTotalMailingCountGroupByYearAndMonth(string login)
+        public async Task<IBaseResponse<List<double>>> GetTotalMailingCountGroupByYearAndMonthAsync
+        (
+            string login,
+            CancellationToken cancellationToken
+        )
         {
             try
             {
                 // todo: user может быть null + юзер не используется
-                var user = await _userRepository.GetAll().FirstOrDefaultAsync(x => x.Login == login);
+                var user = (await userRepository.GetUsersAsync(cancellationToken))
+                    .FirstOrDefault(user => user.Login == login);
 
-                var data = _mailingRepository
+                var data = mailingRepository
                     .GetAll()
                     .GroupBy(x => new { x.Date.Year, x.Date.Month })
                     .Select(x => (double)x.Count())
@@ -218,9 +228,9 @@ namespace WebRunApplication.Services.Services.Implementations
             }
             catch (Exception exception)
             {
-                _logger.LogError(
+                logger.LogError(
                     exception, 
-                    $"[{nameof(TrainingStatisticalService)}.{nameof(GetTotalMailingCountGroupByYearAndMonth)}]: {exception.Message}"
+                    $"[{nameof(TrainingStatisticalService)}.{nameof(GetTotalMailingCountGroupByYearAndMonthAsync)}]: {exception.Message}"
                 );
                 return new BaseResponse<List<double>>
                 {
@@ -230,18 +240,23 @@ namespace WebRunApplication.Services.Services.Implementations
             }
         }
 
-        public async Task<IBaseResponse<List<double>>> GetTotalTrainingCountGroupByYearAndMonth(string login)
+        public async Task<IBaseResponse<List<double>>> GetTotalTrainingCountGroupByYearAndMonthAsync
+        (
+            string login,
+            CancellationToken cancellationToken
+        )
         {
             try
             {
                 // todo: user может быть null
-                var user = await _userRepository.GetAll().FirstOrDefaultAsync(x => x.Login == login);
+                var user = (await userRepository.GetUsersAsync(cancellationToken))
+                    .FirstOrDefault(user => user.Login == login);
 
-                var data = _indicatorRepository
+                var data = indicatorRepository
                     .GetAll()
                     .Where(x => x.UserId == user.Id)
                     .Join(
-                        _trainingRepository.GetAll(),
+                        trainingRepository.GetAll(),
                         indicator => indicator.Date,
                         training => training.Date,
                         (indicator, training) => training)
@@ -257,7 +272,7 @@ namespace WebRunApplication.Services.Services.Implementations
             }
             catch (Exception exception)
             {
-                _logger.LogError(exception, $"[{nameof(TrainingStatisticalService)}.{nameof(GetTotalTrainingCountGroupByYearAndMonth)}]: {exception.Message}");
+                logger.LogError(exception, $"[{nameof(TrainingStatisticalService)}.{nameof(GetTotalTrainingCountGroupByYearAndMonthAsync)}]: {exception.Message}");
                 return new BaseResponse<List<double>>
                 {
                     Description = exception.Message,
@@ -266,16 +281,24 @@ namespace WebRunApplication.Services.Services.Implementations
             }
         }
 
-        public async Task<IBaseResponse<List<double>>> GetTotalTrainingDurationGroupByYearAndMonth(string login)
+        public async Task<IBaseResponse<List<double>>> GetTotalTrainingDurationGroupByYearAndMonthAsync
+        (
+            string login,
+            CancellationToken cancellationToken
+        )
         {
             try
             {
                 // todo: user может быть null
-                var user = await _userRepository.GetAll().FirstOrDefaultAsync(x => x.Login == login);
+                var user = (await userRepository.GetUsersAsync(cancellationToken))
+                    .FirstOrDefault(user => user.Login == login);
 
-                var data = _indicatorRepository.GetAll().ToList()
+                var data = indicatorRepository.GetAll().ToList()
                     .Where(x => x.UserId == user.Id)
-                    .Join(_trainingRepository.GetAll().ToList(), indicator => indicator.Date, training => training.Date, (indicator, training) => training)
+                    .Join(trainingRepository.GetAll().ToList(), 
+                        indicator => indicator.Date,
+                        training => training.Date, 
+                        (_, training) => training)
                     .GroupBy(x => new { x.Date.Year, x.Date.Month })
                     .Select(x => (double)x.Sum(y => (int)y.Duration.TotalMinutes))
                     .ToList();
@@ -288,7 +311,7 @@ namespace WebRunApplication.Services.Services.Implementations
             }
             catch (Exception exception)
             {
-                _logger.LogError(exception, $"[{nameof(TrainingStatisticalService)}.{nameof(GetTotalTrainingDurationGroupByYearAndMonth)}]: {exception.Message}");
+                logger.LogError(exception, $"[{nameof(TrainingStatisticalService)}.{nameof(GetTotalTrainingDurationGroupByYearAndMonthAsync)}]: {exception.Message}");
                 return new BaseResponse<List<double>>
                 {
                     Description = exception.Message,

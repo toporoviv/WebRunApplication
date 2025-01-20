@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using WebRunApplication.Infrastructure;
+using WebRunApplication.Infrastructure.Extensions;
 using WebRunApplication.Services.Models;
 
 namespace WebRunApplication
@@ -25,6 +26,7 @@ namespace WebRunApplication
             builder.Services.AddControllersWithViews();
 
             builder.Services.InitializeRepositories();
+            builder.Services.AddRepositories();
             builder.Services.InitializeServices();
 
             var app = builder.Build();

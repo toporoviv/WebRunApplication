@@ -7,7 +7,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\WebRunApplication.Infrastructre\WebRunApplication.Infrastructre.csproj" />
+      <ProjectReference Include="..\WebRunApplication.Infrastructure\WebRunApplication.Infrastructure.csproj" />
     </ItemGroup>
 
     <ItemGroup>

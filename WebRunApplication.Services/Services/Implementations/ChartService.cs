@@ -6,46 +6,44 @@ using WebRunApplication.Services.Services.Interfaces;
 
 namespace WebRunApplication.Services.Services.Implementations
 {
-    public class ChartService : IChartService
+    public class ChartService(
+        ILogger<ChartService> logger,
+        IUserRepository userRepository,
+        IBaseRepository<Training> trainingRepository,
+        IBaseRepository<Indicator> indicatorRepository,
+        IBaseRepository<TrainingTemplate> trainingTemplateRepository)
+        : IChartService
     {
-        private readonly IBaseRepository<User> _userRepository;
-        private readonly IBaseRepository<Training> _trainingRepository;
-        private readonly IBaseRepository<Indicator> _indicatorRepository;
-        private readonly IBaseRepository<TrainingTemplate> _trainingTemplateRepository;
-        
         // todo: логгер не используется((
-        private readonly ILogger<ChartService> _logger;
+        private readonly ILogger<ChartService> _logger = logger;
 
-        public ChartService(
-            ILogger<ChartService> logger,
-            IBaseRepository<User> userRepository,
-            IBaseRepository<Training> trainingRepository,
-            IBaseRepository<Indicator> indicatorRepository,
-            IBaseRepository<TrainingTemplate> trainingTemplateRepository)
+        public async Task<IBaseResponse<Dictionary<string, int>>> GetTrainingCountAsync
+        (
+            string login,
+            CancellationToken cancellationToken
+        )
         {
-            _logger = logger;
-            _userRepository = userRepository;
-            _trainingRepository = trainingRepository;
-            _indicatorRepository = indicatorRepository;
-            _trainingTemplateRepository = trainingTemplateRepository;
-        }
-
-        public async Task<IBaseResponse<Dictionary<string, int>>> GetTrainingCount(string login)
-        {
-            var user = await _userRepository.GetAll().FirstOrDefaultAsync(x => x.Login == login);
+            var user = (await userRepository.GetUsersAsync(cancellationToken))
+                .FirstOrDefault(x => x.Login == login);
 
             // todo: нужно обнюхать этот код, может его можно упростить
             var trainings = 
-                _indicatorRepository
+                indicatorRepository
                 .GetAll()
                 .Where(ind => ind.UserId == user.Id)
                 .Join(
-                    _trainingRepository.GetAll(),
-                    ind => ind.Date,
-                    train => train.Date,
-                    (ind, train) => new { ind, train })
-                .Join(_trainingTemplateRepository.GetAll(), selector => selector.train.TrainTemplateId,
-                    template => template.Id, (selector, template) => template.Title)
+                    trainingRepository.GetAll(),
+                    indicator => indicator.Date,
+                    training => training.Date,
+                    (indicator, training) => new
+                    {
+                        Indicator = indicator,
+                        Training = training
+                    })
+                .Join(trainingTemplateRepository.GetAll(),
+                    selector => selector.Training.TrainTemplateId,
+                    template => template.Id,
+                    (selector, template) => template.Title)
                 .GroupBy(x => x)
                 .ToDictionary(x => x.Key, x => x.Count());
 

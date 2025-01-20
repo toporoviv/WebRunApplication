@@ -8,39 +8,26 @@ using WebRunApplication.Services.Services.Interfaces;
 namespace WebRunApplication.Services.Services.Implementations
 {
     // todo: все асинхронные методы должны заканчиваться на Async и иметь в параметрах CancellationToken
-    public class AdminService : IAdminService
+    public class AdminService(
+        IBaseRepository<HelpMessage> helpRepository,
+        IUserRepository userRepository,
+        ILogger<AdminService> logger,
+        IBaseRepository<MailingTopic> mailingTopicRepository,
+        IBaseRepository<MailingMessage> mailingRepository,
+        IBaseRepository<MailingTopicSubscriber> mailingTopicSubscriberRepository)
+        : IAdminService
     {
-        private readonly IBaseRepository<User> _userRepository;
-        private readonly IBaseRepository<MailingTopic> _mailingTopicRepository;
-        private readonly IBaseRepository<Mailing> _mailingRepository;
-        private readonly IBaseRepository<MailingTopicSubscriber> _mailingTopicSubscriberRepository;
-        private readonly IBaseRepository<Help> _helpRepository;
-        private readonly ILogger<AdminService> _logger;
-
-        public AdminService
+        public async Task<IBaseResponse<bool>> CreateAnswerAsync
         (
-            IBaseRepository<Help> helpRepository, 
-            IBaseRepository<User> userRepository,
-            ILogger<AdminService> logger, 
-            IBaseRepository<MailingTopic> mailingTopicRepository,
-            IBaseRepository<Mailing> mailingRepository, 
-            IBaseRepository<MailingTopicSubscriber> mailingTopicSubscriberRepository
+            uint id,
+            string answer,
+            CancellationToken cancellationToken
         )
-        {
-            _helpRepository = helpRepository;
-            _logger = logger;
-            _userRepository = userRepository;
-            _mailingTopicRepository = mailingTopicRepository;
-            _mailingRepository = mailingRepository;
-            _mailingTopicSubscriberRepository = mailingTopicSubscriberRepository;
-        }
-
-        public async Task<IBaseResponse<bool>> CreateAnswer(uint id, string answer)
         {
             try
             {
                 // todo: model может быть null
-                var model = await _helpRepository.GetAll().FirstOrDefaultAsync(help => help.Id == id);
+                var model = await helpRepository.GetAll().FirstOrDefaultAsync(help => help.Id == id);
                 model.Answer = answer;
 
                 if (model is null)
@@ -52,7 +39,8 @@ namespace WebRunApplication.Services.Services.Implementations
                     };
                 }
 
-                var user = await _userRepository.GetAll().FirstOrDefaultAsync(user => user.Id == model.UserId);
+                var user = (await userRepository.GetUsersAsync(cancellationToken))
+                    .FirstOrDefault(user => user.Id == model.UserId);
 
                 if (user is null)
                 {
@@ -82,7 +70,7 @@ namespace WebRunApplication.Services.Services.Implementations
                     $"Администратор дал ответ на ваш вопрос.\nВопрос: {model.Question}\nОтвет: {model.Answer}"
                 );
 
-                await _helpRepository.Update(model);
+                await helpRepository.Update(model);
 
                 return new BaseResponse<bool>
                 {
@@ -92,7 +80,7 @@ namespace WebRunApplication.Services.Services.Implementations
             }
             catch(Exception exception)
             {
-                _logger.LogError(exception, $"[{nameof(AdminService)}]: {exception.Message}");
+                logger.LogError(exception, $"[{nameof(AdminService)}]: {exception.Message}");
                 return new BaseResponse<bool>
                 {
                     Description = exception.Message,
@@ -101,38 +89,43 @@ namespace WebRunApplication.Services.Services.Implementations
             }
         }
 
-        public async Task<IBaseResponse<List<HelpViewModel>>> GetQuestions()
+        public async Task<IBaseResponse<List<HelpMessageViewModel>>> GetQuestionsAsync
+        (
+            CancellationToken cancellationToken
+        )
         {
             try
             {
                 // todo: userFIO может выбить ошибку, нужно обработать случай когда user == null
-                var list = _helpRepository
-                    .GetAll()
-                    .Select(help => new HelpViewModel
-                    {
-                        UserId = help.UserId,
-                        Answer = help.Answer,
-                        Question = help.Question,
-                        Date = help.Date,
-                        Id = help.Id,
-                        UserFIO = _userRepository
-                            .GetAll()
-                            .FirstOrDefault(user => user.Id == help.UserId)
-                        .Fullname
-                    })
-                    .OrderBy(x => x.Answer == null)
-                    .ToList();
 
-                return new BaseResponse<List<HelpViewModel>>
+                var helpMessageViewModels = new List<HelpMessageViewModel>();
+                
+                foreach (var helpMessage in helpRepository.GetAll())
                 {
-                    Data = list,
+                    helpMessageViewModels.Add(new HelpMessageViewModel
+                    {
+                        UserId = helpMessage.UserId,
+                        Answer = helpMessage.Answer,
+                        Question = helpMessage.Question,
+                        Date = helpMessage.Date,
+                        Id = helpMessage.Id,
+                        UserFIO = (await userRepository
+                                .GetUsersAsync(cancellationToken))
+                            .FirstOrDefault(user => user.Id == helpMessage.UserId)?
+                            .Fullname ?? throw new ArgumentNullException()
+                    });
+                }
+
+                return new BaseResponse<List<HelpMessageViewModel>>
+                {
+                    Data = helpMessageViewModels.OrderBy(hm => hm.Answer == null).ToList(),
                     StatusCode = Domain.Enums.StatusCode.OK
                 };
             }
             catch(Exception exception)
             {
-                _logger.LogError(exception, $"[{nameof(AdminService)}]: {exception.Message}");
-                return new BaseResponse<List<HelpViewModel>>
+                logger.LogError(exception, $"[{nameof(AdminService)}]: {exception.Message}");
+                return new BaseResponse<List<HelpMessageViewModel>>
                 {
                     Description = exception.Message,
                     StatusCode = Domain.Enums.StatusCode.InternalServerError
@@ -140,23 +133,26 @@ namespace WebRunApplication.Services.Services.Implementations
             }
         }
 
-        public async Task<IBaseResponse<Dictionary<string, (int, int, int)>>> GetTopicsInformation()
+        public async Task<IBaseResponse<Dictionary<string, (int, int, int)>>> GetTopicsInformationAsync
+        (
+            CancellationToken cancellationToken
+        )
         {
             try
             {
                 
-                var dict = _mailingTopicRepository
+                var dict = mailingTopicRepository
                     .GetAll()
                     .Select(t => new
                     {
                         Title = t.Title,
-                        SubscribeCount = _mailingRepository
+                        SubscribeCount = mailingRepository
                             .GetAll()
                             .Count(x => x.MailingTopicId == t.Id),
-                        UserCount = _mailingTopicSubscriberRepository
+                        UserCount = mailingTopicSubscriberRepository
                             .GetAll()
                             .Count(x => x.MailingTopicId == t.Id),
-                        Subscribers = _mailingTopicSubscriberRepository
+                        Subscribers = mailingTopicSubscriberRepository
                             .GetAll()
                             .Where(x => x.MailingTopicId == t.Id)
                             .GroupBy(x => x.UserId)
@@ -175,7 +171,7 @@ namespace WebRunApplication.Services.Services.Implementations
             }
             catch(Exception exception)
             {
-                _logger.LogError(exception, $"[{nameof(AdminService)}]: {exception.Message}");
+                logger.LogError(exception, $"[{nameof(AdminService)}]: {exception.Message}");
                 return new BaseResponse<Dictionary<string, (int, int, int)>>
                 {
                     Description = exception.Message,

@@ -44,7 +44,7 @@ namespace WebRunApplication.Controllers
             var trainingDictionary = await GetTrainings();
             ViewBag.Trainings = trainingDictionary;
             
-            var trainingsTypes = await _personalAccountService.GetTrainings(User.Identity!.Name!);
+            var trainingsTypes = await _personalAccountService.GetTrainingsAsync(User.Identity!.Name!);
 
             if (trainingsTypes.StatusCode != Domain.Enums.StatusCode.OK) 
                 ModelState.AddModelError("", trainingsTypes.Description);
@@ -144,7 +144,7 @@ namespace WebRunApplication.Controllers
 
         private async Task<Dictionary<string, int>?> GetTrainings()
         {
-            var result = await _chartService.GetTrainingCount(User.Identity!.Name!);
+            var result = await _chartService.GetTrainingCountAsync(User.Identity!.Name!);
 
             if (result.StatusCode != Domain.Enums.StatusCode.OK)
             {

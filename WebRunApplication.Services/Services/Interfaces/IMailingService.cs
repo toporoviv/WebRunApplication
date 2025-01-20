@@ -2,7 +2,7 @@
 
 namespace WebRunApplication.Services.Services.Interfaces
 {
-    public interface IMailingService : IBaseService<Mailing>
+    public interface IMailingService : IBaseService<MailingMessage>
     {
     }
 }
