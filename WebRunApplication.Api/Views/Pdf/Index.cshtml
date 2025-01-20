@@ -1,0 +1,63 @@
+﻿<link rel="stylesheet" href="~/css/ForumStyle.css" />
+
+<body>
+    <table border="1">
+   <tr>
+        <th>Дата</th>
+        <th>Продолжительность</th>
+        <th>Минимальный пульс</th>
+        <th>Средний пульс</th>
+        <th>Максимальный пульс</th>
+        <th>Шаги</th>
+        <th>Калории</th>
+        <th>Средняя скорость</th>
+   </tr>
+        @foreach (var indicator in ViewBag.UserIndicators)
+        {
+                <tr>
+                    <td>@indicator.Date.ToShortDateString()</td>
+                    <td>@indicator.Duration</td>
+                    <td>@indicator.MinimumPulse</td>
+                    <td>@indicator.AveragePulse</td>
+                    <td>@indicator.MaximumPulse</td>
+                    <td>@indicator.Steps</td>
+                    <td>@indicator.Calories</td>
+                    <td>@indicator.AverageSpeed</td>
+                </tr>
+        }
+        @{
+            int i = 0;
+        }
+        @foreach (var indicator in ViewBag.UserIndicatorsResults)
+        {
+                <tr>
+                @if (i == 0)
+                {
+                        <td colspan="2">Минимальное значение</td>
+                }
+                else if (i == 1)
+                {
+                                        <td colspan="2">Среднее значение значение</td>
+                }
+                else
+                {
+                                        <td colspan="2">Максимальное значение</td>
+                }
+                <td>@indicator.MinimumPulse</td>
+                        <td>@indicator.AveragePulse</td>
+                        <td>@indicator.MaximumPulse</td>
+                        <td>@indicator.Steps</td>
+                        <td>@indicator.Calories</td>
+                        <td>@indicator.AverageSpeed</td>
+                </tr>
+
+            i++;
+        }
+  </table>
+
+    <form method="post" asp-controller="Pdf" asp-action="ExportIndicatorsPdf">
+        <input type="hidden" name="ExportData" id="ExportData" />
+        <input type="submit" id="btnSubmit" value="Export" class="btn btn-primary" />
+    </form>
+
+ </body>
