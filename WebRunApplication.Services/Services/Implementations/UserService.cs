@@ -13,7 +13,11 @@ namespace WebRunApplication.Services.Implementations
         IUserRepository userRepository
     ) : IUserService
     {
-        public async Task<IBaseResponse<User>> CreateAsync(User model, CancellationToken cancellationToken)
+        public async Task<IBaseResponse<User>> CreateAsync
+        (
+            Infrastructure.Models.User model,
+            CancellationToken cancellationToken
+        )
         {
             try
             {
@@ -29,7 +33,7 @@ namespace WebRunApplication.Services.Implementations
                     };
                 }
 
-                await userRepository.CreateUserAsync(new Infrastructure.Models.User
+                var result = await userRepository.CreateUserAsync(new Infrastructure.Models.User
                 {
                     Age = model.Age,
                     Email = model.Email,
@@ -44,7 +48,7 @@ namespace WebRunApplication.Services.Implementations
 
                 return new BaseResponse<User>()
                 {
-                    Data = model,
+                    Data = result,
                     Description = "Пользователь добавлен",
                     StatusCode = StatusCode.OK
                 };

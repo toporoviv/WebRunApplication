@@ -4,7 +4,7 @@ namespace WebRunApplication.Services.Interfaces
 {
     public interface IForumMessageService
     {
-        Task<IBaseResponse<ForumMessage>> CreateAsync(ForumMessage model, CancellationToken cancellationToken = default);
+        Task<IBaseResponse<ForumMessage>> CreateAsync(Infrastructure.Models.ForumMessage model, CancellationToken cancellationToken = default);
 
         Task<IBaseResponse<IEnumerable<ForumMessage>>> GetAllAsync(CancellationToken cancellationToken = default);
 

@@ -1,40 +1,108 @@
-﻿using WebRunApplication.Domain.Entities.Forum;
+﻿using Dapper;
+using Microsoft.Extensions.Options;
+using WebRunApplication.Domain.Entities.Forum;
 using WebRunApplication.Infrastructure.Interfaces;
+using WebRunApplication.Infrastructure.Options;
 
 namespace WebRunApplication.Infrastructure.Repositories
 {
-    public class ForumReactionRepository: IBaseRepository<ForumReaction>
+    internal class ForumReactionRepository(IOptions<PostgreOptions> options)
+        : DbRepository(options.Value), IForumReactionRepository
     {
-        private readonly ApplicationDbContext _db;
-
-        public ForumReactionRepository(ApplicationDbContext db)
+        public async Task<ForumReaction> CreateForumReactionAsync
+        (
+            Models.ForumReaction forumReaction,
+            CancellationToken cancellationToken = default
+        )
         {
-            _db = db;
+            ArgumentNullException.ThrowIfNull(forumReaction);
+            
+            await using var connection = await GetAndOpenConnectionAsync(cancellationToken);
+
+            var sqlQuery = @$"insert into forum_reactions(user_id, message_id, reaction)
+                            values (@{nameof(forumReaction.UserId)},
+                                    @{nameof(forumReaction.MessageId)},
+                                    @{nameof(forumReaction.Reaction)})
+                            returning id, user_id, message_id, reaction";
+
+            return await connection.QueryFirstAsync<ForumReaction>(sqlQuery);
         }
 
-        public IQueryable<ForumReaction> GetAll()
+        public async Task<IEnumerable<ForumReaction>> GetForumReactionsAsync
+        (
+            CancellationToken cancellationToken = default
+        )
         {
-            return _db.ForumReactions;
+            await using var connection = await GetAndOpenConnectionAsync(cancellationToken);
+
+            var sqlQuery = "select * from forum_reactions";
+
+            return await connection.QueryAsync<ForumReaction>(sqlQuery);
         }
 
-        public async Task Delete(ForumReaction entity)
+        public async Task<ForumReaction?> GetForumReactionByIdAsync
+        (
+            int id,
+            CancellationToken cancellationToken = default
+        )
         {
-            _db.ForumReactions.Remove(entity);
-            await _db.SaveChangesAsync();
+            await using var connection = await GetAndOpenConnectionAsync(cancellationToken);
+
+            var sqlQuery = "select * from forum_reactions where id = @Id";
+            var sqlParams = new
+            {
+                Id = id
+            };
+
+            return await connection.QueryFirstOrDefaultAsync<ForumReaction>(sqlQuery, sqlParams);
         }
 
-        public async Task Create(ForumReaction entity)
+        public async Task<ForumReaction> UpdateForumReactionAsync
+        (
+            int id,
+            Models.ForumReaction forumReaction,
+            CancellationToken cancellationToken = default
+        )
         {
-            await _db.ForumReactions.AddAsync(entity);
-            await _db.SaveChangesAsync();
+            ArgumentNullException.ThrowIfNull(forumReaction);
+
+            await using var connection = await GetAndOpenConnectionAsync(cancellationToken);
+
+            var sqlQuery = @"update forum_reactions
+                set user_id = @UserId,
+                    message_id = @MessageId,
+                    reaction = @Reaction
+                where id = @Id
+                returning id, user_id, message_id, reaction";
+
+            var sqlParams = new
+            {
+                Id = id,
+                UserId = forumReaction.UserId,
+                MessageId = forumReaction.MessageId,
+                Reaction = forumReaction.Reaction
+            };
+
+            return await connection.QueryFirstAsync<ForumReaction>(sqlQuery, sqlParams);
         }
 
-        public async Task<ForumReaction> Update(ForumReaction entity)
+        public async Task<ForumReaction?> DeleteForumReactionAsync
+        (
+            int id,
+            CancellationToken cancellationToken = default
+        )
         {
-            _db.ForumReactions.Update(entity);
-            await _db.SaveChangesAsync();
+            await using var connection = await GetAndOpenConnectionAsync(cancellationToken);
 
-            return entity;
+            var sqlQuery = @"delete from forum_reactions where id = @Id
+                returning id, user_id, message_id, reaction";
+            
+            var sqlParams = new
+            {
+                Id = id
+            };
+
+            return await connection.QuerySingleAsync<ForumReaction>(sqlQuery, sqlParams);
         }
     }
 }

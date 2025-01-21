@@ -15,19 +15,17 @@ namespace WebRunApplication.Services.Implementations
     {
         public async Task<IBaseResponse<ForumMessage>> CreateAsync
         (
-            ForumMessage model,
+            Infrastructure.Models.ForumMessage model,
             CancellationToken cancellationToken
         )
         {
             try
             {
-                await forumMessageRepository.CreateForumMessageAsync(
-                    model.ToForumMessageWithoutId(),
-                    cancellationToken);
+                var result = await forumMessageRepository.CreateForumMessageAsync(model, cancellationToken);
 
                 return new BaseResponse<ForumMessage>
                 {
-                    Data = model,
+                    Data = result,
                     StatusCode = StatusCode.OK,
                 };
             }

@@ -7,32 +7,31 @@ using WebRunApplication.Services.Interfaces;
 
 namespace WebRunApplication.Services.Implementations
 {
-    public class ForumReactionService : IForumReactionService
+    internal class ForumReactionService
+    (
+        ILogger<ForumReactionService> logger,
+        IForumReactionRepository forumReactionRepository
+    ) : IForumReactionService
     {
-        private readonly ILogger<ForumReactionService> _logger;
-        private readonly IBaseRepository<ForumReaction> _forumReactionRepository;
-
-        public ForumReactionService(ILogger<ForumReactionService> logger, IBaseRepository<ForumReaction> forumReactionRepository)
-        {
-            _logger = logger;
-            _forumReactionRepository = forumReactionRepository;
-        }
-
-        public async Task<IBaseResponse<ForumReaction>> Create(ForumReaction model)
+        public async Task<IBaseResponse<ForumReaction>> CreateAsync
+        (
+            Infrastructure.Models.ForumReaction model,
+            CancellationToken cancellationToken
+        )
         {
             try
             {
-                await _forumReactionRepository.Create(model);
+                var result = await forumReactionRepository.CreateForumReactionAsync(model, cancellationToken);
 
                 return new BaseResponse<ForumReaction>
                 {
-                    Data = model,
+                    Data = result,
                     StatusCode = StatusCode.OK,
                 };
             }
             catch (Exception exception)
             {
-                _logger.LogError(exception, $"[{nameof(ForumReactionService)}.{nameof(Create)}] error: {exception.Message}");
+                logger.LogError(exception, $"[{nameof(ForumReactionService)}.{nameof(CreateAsync)}] error: {exception.Message}");
                 return new BaseResponse<ForumReaction>()
                 {
                     StatusCode = StatusCode.InternalServerError,
@@ -41,11 +40,12 @@ namespace WebRunApplication.Services.Implementations
             }
         }
 
-        public async Task<IBaseResponse<bool>> Delete(long id)
+        public async Task<IBaseResponse<bool>> DeleteAsync(int id, CancellationToken cancellationToken)
         {
             try
             {
-                var reaction = await _forumReactionRepository.GetAll().FirstOrDefaultAsync(x => x.Id == id);
+                var reaction = await forumReactionRepository.GetForumReactionByIdAsync(id, cancellationToken);
+                
                 if (reaction is null)
                 {
                     return new BaseResponse<bool>
@@ -55,8 +55,8 @@ namespace WebRunApplication.Services.Implementations
                     };
                 }
 
-                await _forumReactionRepository.Delete(reaction);
-                _logger.LogInformation($"[{nameof(ForumReactionService)}.{nameof(Delete)}] реакция удалена");
+                await forumReactionRepository.DeleteForumReactionAsync(reaction.Id, cancellationToken);
+                logger.LogInformation($"[{nameof(ForumReactionService)}.{nameof(DeleteAsync)}] реакция удалена");
 
                 return new BaseResponse<bool>
                 {
@@ -66,7 +66,7 @@ namespace WebRunApplication.Services.Implementations
             }
             catch (Exception exception)
             {
-                _logger.LogError(exception, $"[{nameof(ForumReactionService)}.{nameof(Delete)}] error: {exception.Message}");
+                logger.LogError(exception, $"[{nameof(ForumReactionService)}.{nameof(DeleteAsync)}] error: {exception.Message}");
                 return new BaseResponse<bool>()
                 {
                     StatusCode = StatusCode.InternalServerError,
@@ -75,12 +75,14 @@ namespace WebRunApplication.Services.Implementations
             }
         }
 
-        public async Task<IBaseResponse<IEnumerable<ForumReaction>>> GetAll()
+        public async Task<IBaseResponse<IEnumerable<ForumReaction>>> GetAllAsync(CancellationToken cancellationToken)
         {
             try
             {
-                var reactions = await _forumReactionRepository.GetAll().ToListAsync();
-                _logger.LogInformation($"[{nameof(ForumReactionService)}.{nameof(GetAll)}] получено реакций {reactions.Count}");
+                var reactions = (await forumReactionRepository.GetForumReactionsAsync(cancellationToken))
+                    .ToList();
+                
+                logger.LogInformation($"[{nameof(ForumReactionService)}.{nameof(GetAllAsync)}] получено реакций {reactions.Count}");
 
                 return new BaseResponse<IEnumerable<ForumReaction>>
                 {
@@ -90,7 +92,7 @@ namespace WebRunApplication.Services.Implementations
             }
             catch (Exception exception)
             {
-                _logger.LogError(exception, $"[{nameof(ForumReactionService)}.{nameof(GetAll)}] error: {exception.Message}");
+                logger.LogError(exception, $"[{nameof(ForumReactionService)}.{nameof(GetAllAsync)}] error: {exception.Message}");
                 return new BaseResponse<IEnumerable<ForumReaction>>
                 {
                     StatusCode = StatusCode.InternalServerError,

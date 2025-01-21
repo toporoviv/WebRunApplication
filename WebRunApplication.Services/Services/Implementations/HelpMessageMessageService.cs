@@ -15,19 +15,17 @@ namespace WebRunApplication.Services.Implementations
     {
         public async Task<IBaseResponse<HelpMessage>> CreateAsync
         (
-            HelpMessage model,
+            Infrastructure.Models.HelpMessage model,
             CancellationToken cancellationToken
         )
         {
             try
             {
-                await helpRepository.CreateHelpMessageAsync(
-                    model.ToHelpMessageWithoutId(),
-                    cancellationToken);
+                var result = await helpRepository.CreateHelpMessageAsync(model, cancellationToken);
 
                 return new BaseResponse<HelpMessage>
                 {
-                    Data = model,
+                    Data = result,
                     StatusCode = StatusCode.OK,
                 };
             }
