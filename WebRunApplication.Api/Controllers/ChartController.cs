@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Newtonsoft.Json;
 using WebRunApplication.Infrastructure;
-using WebRunApplication.Services.Services.Interfaces;
+using WebRunApplication.Services.Interfaces;
 
 namespace WebRunApplication.Controllers
 {

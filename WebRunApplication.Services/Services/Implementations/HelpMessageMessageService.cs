@@ -1,28 +1,29 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using WebRunApplication.Domain.Entities;
 using WebRunApplication.Domain.Enums;
 using WebRunApplication.Infrastructure.Interfaces;
-using WebRunApplication.Services.Services.Interfaces;
+using WebRunApplication.Services.Extensions;
+using WebRunApplication.Services.Interfaces;
 
-namespace WebRunApplication.Services.Services.Implementations
+namespace WebRunApplication.Services.Implementations
 {
-    public class HelpService : IHelpService
+    public class HelpMessageMessageService
+    (
+        ILogger<HelpMessageMessageService> logger,
+        IHelpMessageRepository helpRepository
+    ) : IHelpMessageService
     {
-        private readonly ILogger<HelpService> _logger;
-        private readonly IBaseRepository<HelpMessage> _helpRepository;
-
-        public HelpService(ILogger<HelpService> logger, IBaseRepository<HelpMessage> helpRepository)
-        {
-            _logger = logger;
-            _helpRepository = helpRepository;
-        }
-
-        public async Task<IBaseResponse<HelpMessage>> Create(HelpMessage model)
+        public async Task<IBaseResponse<HelpMessage>> CreateAsync
+        (
+            HelpMessage model,
+            CancellationToken cancellationToken
+        )
         {
             try
             {
-                await _helpRepository.Create(model);
+                await helpRepository.CreateHelpMessageAsync(
+                    model.ToHelpMessageWithoutId(),
+                    cancellationToken);
 
                 return new BaseResponse<HelpMessage>
                 {
@@ -32,7 +33,7 @@ namespace WebRunApplication.Services.Services.Implementations
             }
             catch (Exception exception)
             {
-                _logger.LogError(exception, $"[{nameof(HelpService)}.{nameof(Create)}] error: {exception.Message}");
+                logger.LogError(exception, $"[{nameof(HelpMessageMessageService)}.{nameof(CreateAsync)}] error: {exception.Message}");
                 return new BaseResponse<HelpMessage>()
                 {
                     StatusCode = StatusCode.InternalServerError,
@@ -41,11 +42,11 @@ namespace WebRunApplication.Services.Services.Implementations
             }
         }
 
-        public async Task<IBaseResponse<bool>> Delete(long id)
+        public async Task<IBaseResponse<bool>> DeleteAsync(int id, CancellationToken cancellationToken)
         {
             try
             {
-                var help = await _helpRepository.GetAll().FirstOrDefaultAsync(x => x.Id == id);
+                var help = await helpRepository.GetHelpMessageByIdAsync(id, cancellationToken);
                 if (help is null)
                 {
                     return new BaseResponse<bool>
@@ -55,8 +56,8 @@ namespace WebRunApplication.Services.Services.Implementations
                     };
                 }
 
-                await _helpRepository.Delete(help);
-                _logger.LogInformation($"[{nameof(HelpService)}.{nameof(Delete)}] вопрос удален");
+                await helpRepository.DeleteHelpMessage(help.Id, cancellationToken);
+                logger.LogInformation($"[{nameof(HelpMessageMessageService)}.{nameof(DeleteAsync)}] вопрос удален");
 
                 return new BaseResponse<bool>
                 {
@@ -66,7 +67,7 @@ namespace WebRunApplication.Services.Services.Implementations
             }
             catch (Exception exception)
             {
-                _logger.LogError(exception, $"[{nameof(HelpService)}.{nameof(Delete)}] error: {exception.Message}");
+                logger.LogError(exception, $"[{nameof(HelpMessageMessageService)}.{nameof(DeleteAsync)}] error: {exception.Message}");
                 return new BaseResponse<bool>()
                 {
                     StatusCode = StatusCode.InternalServerError,
@@ -75,12 +76,14 @@ namespace WebRunApplication.Services.Services.Implementations
             }
         }
 
-        public async Task<IBaseResponse<IEnumerable<HelpMessage>>> GetAll()
+        public async Task<IBaseResponse<IEnumerable<HelpMessage>>> GetAllAsync(CancellationToken cancellationToken)
         {
             try
             {
-                var helps = await _helpRepository.GetAll().ToListAsync();
-                _logger.LogInformation($"[{nameof(HelpService)}.{nameof(GetAll)}] получено вопросов {helps.Count}");
+                var helps = (await helpRepository.GetHelpMessagesAsync(cancellationToken))
+                    .ToList();
+                
+                logger.LogInformation($"[{nameof(HelpMessageMessageService)}.{nameof(GetAllAsync)}] получено вопросов {helps.Count}");
 
                 return new BaseResponse<IEnumerable<HelpMessage>>
                 {
@@ -90,7 +93,7 @@ namespace WebRunApplication.Services.Services.Implementations
             }
             catch (Exception exception)
             {
-                _logger.LogError(exception, $"[{nameof(HelpService)}.{nameof(GetAll)}] error: {exception.Message}");
+                logger.LogError(exception, $"[{nameof(HelpMessageMessageService)}.{nameof(GetAllAsync)}] error: {exception.Message}");
                 return new BaseResponse<IEnumerable<HelpMessage>>
                 {
                     StatusCode = StatusCode.InternalServerError,

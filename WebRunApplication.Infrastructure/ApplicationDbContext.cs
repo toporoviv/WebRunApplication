@@ -10,14 +10,7 @@ namespace WebRunApplication.Infrastructure
         {
         }
 
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            base.OnModelCreating(modelBuilder);
-        }
-
         public DbSet<Indicator> Indicators { get; set; }
-
-        public DbSet<HelpMessage> Helps { get; set; }
 
         public DbSet<TrainingTemplateType> TemplateTypes { get; set; }
 

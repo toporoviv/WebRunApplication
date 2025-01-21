@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using WebRunApplication.Services.Models;
-using WebRunApplication.Services.Services.Interfaces;
+using WebRunApplication.Services.Interfaces;
 
 namespace WebRunApplication.Controllers
 {
@@ -74,7 +74,7 @@ namespace WebRunApplication.Controllers
             var user = (await _userService.GetAllAsync()).Data.FirstOrDefault(u => u.Login == User.Identity.Name);
             
             // todo: вынести в конфиг
-            var result = await _mailSenderService.SendMessage(
+            var result = await _mailSenderService.SendMessageAsync(
                 (uint)user.Id, 
                 "ya.toporow@gmail.com",
                 message,

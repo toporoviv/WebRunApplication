@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using WebRunApplication.Services.Models;
-using WebRunApplication.Services.Services.Interfaces;
+using WebRunApplication.Services.Interfaces;
 
 namespace WebRunApplication.Controllers
 {

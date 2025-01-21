@@ -6,42 +6,10 @@ using WebRunApplication.Infrastructure.Options;
 
 namespace WebRunApplication.Infrastructure.Repositories
 {
-    internal class HelpMessageRepository : DbRepository,
-        IBaseRepository<HelpMessage>,
-        IHelpMessageRepository
+    internal class HelpMessageRepository(IOptions<PostgreOptions> options, ApplicationDbContext db)
+        : DbRepository(options.Value),
+            IHelpMessageRepository
     {
-        private readonly ApplicationDbContext _db;
-
-        public HelpMessageRepository(IOptions<PostgreOptions> options, ApplicationDbContext db) : base(options.Value)
-        {
-            _db = db;
-        }
-
-        public IQueryable<HelpMessage> GetAll()
-        {
-            return _db.Helps;
-        }
-
-        public async Task Delete(HelpMessage entity)
-        {
-            _db.Helps.Remove(entity);
-            await _db.SaveChangesAsync();
-        }
-
-        public async Task Create(HelpMessage entity)
-        {
-            await _db.Helps.AddAsync(entity);
-            await _db.SaveChangesAsync();
-        }
-
-        public async Task<HelpMessage> Update(HelpMessage entity)
-        {
-            _db.Helps.Update(entity);
-            await _db.SaveChangesAsync();
-
-            return entity;
-        }
-
         public async Task<HelpMessage> CreateHelpMessageAsync
         (
             Models.HelpMessage helpMessage,

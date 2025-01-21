@@ -2,9 +2,9 @@
 using Microsoft.Extensions.Logging;
 using WebRunApplication.Domain.Entities;
 using WebRunApplication.Infrastructure.Interfaces;
-using WebRunApplication.Services.Services.Interfaces;
+using WebRunApplication.Services.Interfaces;
 
-namespace WebRunApplication.Services.Services.Implementations
+namespace WebRunApplication.Services.Implementations
 {
     public class ChartService(
         ILogger<ChartService> logger,

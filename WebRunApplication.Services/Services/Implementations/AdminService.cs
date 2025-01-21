@@ -2,14 +2,15 @@
 using Microsoft.Extensions.Logging;
 using WebRunApplication.Domain.Entities;
 using WebRunApplication.Infrastructure.Interfaces;
+using WebRunApplication.Services.Extensions;
+using WebRunApplication.Services.Interfaces;
 using WebRunApplication.Services.Models;
-using WebRunApplication.Services.Services.Interfaces;
 
-namespace WebRunApplication.Services.Services.Implementations
+namespace WebRunApplication.Services.Implementations
 {
     // todo: все асинхронные методы должны заканчиваться на Async и иметь в параметрах CancellationToken
     public class AdminService(
-        IBaseRepository<HelpMessage> helpRepository,
+        IHelpMessageRepository helpRepository,
         IUserRepository userRepository,
         ILogger<AdminService> logger,
         IBaseRepository<MailingTopic> mailingTopicRepository,
@@ -26,10 +27,9 @@ namespace WebRunApplication.Services.Services.Implementations
         {
             try
             {
-                // todo: model может быть null
-                var model = await helpRepository.GetAll().FirstOrDefaultAsync(help => help.Id == id);
-                model.Answer = answer;
-
+                var model = (await helpRepository.GetHelpMessagesAsync(cancellationToken))
+                    .FirstOrDefault(help => help.Id == id);
+                
                 if (model is null)
                 {
                     return new BaseResponse<bool>
@@ -38,6 +38,8 @@ namespace WebRunApplication.Services.Services.Implementations
                         StatusCode = Domain.Enums.StatusCode.NotFound
                     };
                 }
+                
+                model.Answer = answer;
 
                 var user = (await userRepository.GetUsersAsync(cancellationToken))
                     .FirstOrDefault(user => user.Id == model.UserId);
@@ -70,7 +72,10 @@ namespace WebRunApplication.Services.Services.Implementations
                     $"Администратор дал ответ на ваш вопрос.\nВопрос: {model.Question}\nОтвет: {model.Answer}"
                 );
 
-                await helpRepository.Update(model);
+                await helpRepository.UpdateHelpMessageAsync(
+                    model.Id,
+                    model.ToHelpMessageWithoutId(),
+                    cancellationToken);
 
                 return new BaseResponse<bool>
                 {
@@ -99,8 +104,11 @@ namespace WebRunApplication.Services.Services.Implementations
                 // todo: userFIO может выбить ошибку, нужно обработать случай когда user == null
 
                 var helpMessageViewModels = new List<HelpMessageViewModel>();
+
+                var helpMessages = (await helpRepository.GetHelpMessagesAsync(cancellationToken))
+                    .ToList();
                 
-                foreach (var helpMessage in helpRepository.GetAll())
+                foreach (var helpMessage in helpMessages)
                 {
                     helpMessageViewModels.Add(new HelpMessageViewModel
                     {
@@ -133,6 +141,7 @@ namespace WebRunApplication.Services.Services.Implementations
             }
         }
 
+        // todo: разобраться с async
         public async Task<IBaseResponse<Dictionary<string, (int, int, int)>>> GetTopicsInformationAsync
         (
             CancellationToken cancellationToken

@@ -1,6 +1,6 @@
 ﻿using WebRunApplication.Services.Models;
 
-namespace WebRunApplication.Services.Services.Interfaces
+namespace WebRunApplication.Services.Interfaces
 {
     public interface IAdminService
     {

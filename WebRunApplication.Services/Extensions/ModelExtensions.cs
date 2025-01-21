@@ -4,7 +4,7 @@ using WebRunApplication.Services.Models;
 
 namespace WebRunApplication.Services.Extensions;
 
-public static class ModelExtensions
+internal static class ModelExtensions
 {
     public static User ToUserWithoutId(this RegisterModel model)
     {
@@ -21,6 +21,17 @@ public static class ModelExtensions
             Password = model.Password,
             Weight = model.Weight,
             Role = Role.User
+        };
+    }
+
+    public static HelpMessage ToHelpMessageWithoutId(this Domain.Entities.HelpMessage helpMessage)
+    {
+        return new HelpMessage
+        {
+            Question = helpMessage.Question,
+            Date = helpMessage.Date,
+            UserId = helpMessage.UserId,
+            Answer = helpMessage.Answer
         };
     }
 }

@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using WebRunApplication.Domain.Entities;
 using WebRunApplication.Services.Models;
-using WebRunApplication.Services.Services.Interfaces;
+using WebRunApplication.Services.Interfaces;
 
 namespace WebRunApplication.Controllers
 {
@@ -11,7 +11,7 @@ namespace WebRunApplication.Controllers
     {
         private readonly IAdminService _adminService;
         private readonly IUserService _userService;
-        private readonly IHelpService _helpService;
+        private readonly IHelpMessageService _helpMessageService;
         
         // todo: _mailSenderService не используется((
         private readonly IMailSenderService _mailSenderService;
@@ -20,13 +20,13 @@ namespace WebRunApplication.Controllers
         private readonly IMailingTopicSubscriberService _mailingTopicSubscriberService;
 
         public AdminController(
-            IAdminService adminService, IHelpService helpService,
+            IAdminService adminService, IHelpMessageService helpMessageService,
             IMailingTopicService mailingTopicService, IMailSenderService mailSenderService,
             IMailingTopicSubscriberService mailingTopicSubscriberService, IUserService userService,
             IMailingService mailingService)
         {
             _adminService = adminService;
-            _helpService = helpService;
+            _helpMessageService = helpMessageService;
             _mailingTopicService = mailingTopicService;
             _mailSenderService = mailSenderService;
             _mailingTopicSubscriberService = mailingTopicSubscriberService;
@@ -50,7 +50,7 @@ namespace WebRunApplication.Controllers
         [HttpPost]
         public async Task<IActionResult> Question(int id)
         {
-            var result = await _helpService.GetAll();
+            var result = await _helpMessageService.GetAllAsync();
 
             if (result.StatusCode == Domain.Enums.StatusCode.OK)
             { 

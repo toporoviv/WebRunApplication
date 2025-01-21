@@ -3,8 +3,8 @@ using WebRunApplication.Domain.Entities;
 using WebRunApplication.Domain.Entities.Forum;
 using WebRunApplication.Infrastructure.Interfaces;
 using WebRunApplication.Infrastructure.Repositories;
-using WebRunApplication.Services.Services.Implementations;
-using WebRunApplication.Services.Services.Interfaces;
+using WebRunApplication.Services.Implementations;
+using WebRunApplication.Services.Interfaces;
 
 namespace WebRunApplication.Services.Models
 {
@@ -28,7 +28,7 @@ namespace WebRunApplication.Services.Models
             services.AddScoped<IAdminService, AdminService>();
             services.AddScoped<IPersonalAccountService, PersonalAccountService>();
             services.AddScoped<IUserService, UserService>();
-            services.AddScoped<IHelpService, HelpService>();
+            services.AddScoped<IHelpMessageService, HelpMessageMessageService>();
             services.AddScoped<IMailSenderService, MailSenderService>();
             services.AddScoped<IMailingService, MailingService>();
             services.AddScoped<IMailingTopicService, MailingTopicService>();

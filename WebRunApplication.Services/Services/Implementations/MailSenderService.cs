@@ -1,23 +1,22 @@
 ﻿using Microsoft.Extensions.Logging;
 using WebRunApplication.Domain.Entities;
 using WebRunApplication.Infrastructure.Interfaces;
+using WebRunApplication.Services.Interfaces;
 using WebRunApplication.Services.Models;
-using WebRunApplication.Services.Services.Interfaces;
 
-namespace WebRunApplication.Services.Services.Implementations
+namespace WebRunApplication.Services.Implementations
 {
-    public class MailSenderService : IMailSenderService
+    public class MailSenderService(IHelpMessageRepository helpMessageRepository, ILogger<MailSenderService> logger)
+        : IMailSenderService
     {
-        private readonly IBaseRepository<HelpMessage> _helpRepository;
-        private readonly ILogger<MailSenderService> _logger;
-
-        public MailSenderService(IBaseRepository<HelpMessage> helpRepository, ILogger<MailSenderService> logger)
-        {
-            _helpRepository = helpRepository;
-            _logger = logger;
-        }
-
-        public async Task<IBaseResponse<bool>> SendMessage(uint userId, string emailTo, string message, string topic)
+        public async Task<IBaseResponse<bool>> SendMessageAsync
+        (
+            uint userId,
+            string emailTo,
+            string message,
+            string topic,
+            CancellationToken cancellationToken
+        )
         {
             try
             {
@@ -26,12 +25,12 @@ namespace WebRunApplication.Services.Services.Implementations
 
                 await mailSender.Send(topic, message);
 
-                await _helpRepository.Create(new HelpMessage
+                await helpMessageRepository.CreateHelpMessageAsync(new Infrastructure.Models.HelpMessage
                 {
                     Date = DateTime.Now,
                     UserId = (int)userId,
                     Question = message
-                });
+                }, cancellationToken);
 
                 return new BaseResponse<bool>
                 {
@@ -41,7 +40,7 @@ namespace WebRunApplication.Services.Services.Implementations
             }
             catch(Exception exception)
             {
-                _logger.LogError(exception, $"[{nameof(AdminService)}]: {exception.Message}");
+                logger.LogError(exception, $"[{nameof(AdminService)}]: {exception.Message}");
                 return new BaseResponse<bool>
                 {
                     Description = exception.Message,

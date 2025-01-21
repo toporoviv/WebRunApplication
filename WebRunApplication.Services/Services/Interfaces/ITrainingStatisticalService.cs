@@ -1,6 +1,6 @@
 ﻿using WebRunApplication.Services.Models;
 
-namespace WebRunApplication.Services.Services.Interfaces
+namespace WebRunApplication.Services.Interfaces
 {
     
     // todo: понюхать методы, думаю можно что то исправить
