@@ -9,5 +9,6 @@ public static class ServiceCollectionExtensions
     public static void AddRepositories(this IServiceCollection services)
     {
         services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IHelpMessageRepository, HelpMessageRepository>();
     }
 }

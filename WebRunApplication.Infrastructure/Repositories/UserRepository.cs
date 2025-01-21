@@ -41,7 +41,33 @@ values (@{nameof(user.Login)},
 
         public async Task<User> UpdateUserAsync(int userId, Models.User user, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            await using var connection = await GetAndOpenConnectionAsync(cancellationToken);
+
+            var sqlQuery = @"update users
+set login = @Login,
+    password = @Password,
+    email = @Email,
+    fullname = @Fullname,
+    age = @Age,
+    gender = @Gender,
+    weight = @Weight,
+    height = @Height
+ where id = @Id";
+            
+            var sqlParams = new
+            {
+                Id = userId,
+                Login = user.Login,
+                Password = user.Password,
+                Email = user.Email,
+                Fullname = user.Fullname,
+                Age = user.Age,
+                Gender = user.Gender,
+                Weight = user.Weight,
+                Height = user.Height
+            };
+
+            return await connection.QuerySingleAsync<User>(sqlQuery, sqlParams);
         }
 
         public async Task<User?> GetUserByIdAsync(int id, CancellationToken cancellationToken)

@@ -14,7 +14,6 @@ namespace WebRunApplication.Services.Models
         {
             services.AddScoped<IBaseRepository<ForumMessage>, ForumMessageRepository>();
             services.AddScoped<IBaseRepository<ForumReaction>, ForumReactionRepository>();
-            services.AddScoped<IBaseRepository<HelpMessage>, HelpRepository>();
             services.AddScoped<IBaseRepository<MailingMessage>, MailingRepository>();
             services.AddScoped<IBaseRepository<MailingTopic>, MailingTopicRepository>();
             services.AddScoped<IBaseRepository<MailingTopicSubscriber>, MailingTopicSubscriberRepository>();
