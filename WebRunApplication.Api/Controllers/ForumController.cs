@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WebRunApplication.Domain.Entities.Forum;
+using WebRunApplication.Domain.Enums.Forum;
 using WebRunApplication.Infrastructure;
 using WebRunApplication.Infrastructure.Interfaces;
 using WebRunApplication.Services.Models;
@@ -38,11 +39,19 @@ namespace WebRunApplication.Controllers
                 Date = forumMessage.Date,
                 LikedUsers = users
                     .Join(context.ForumReactions
-                    .Where(y => y.IsLike && y.MessageId == forumMessage.Id), u => u.Id, fr => fr.UserId, (u, fr) => u)
+                    .Where(
+                        y => y.Reaction == ReactionType.Like && y.MessageId == forumMessage.Id),
+                        u => u.Id,
+                        fr => fr.UserId, 
+                        (u, fr) => u)
                     .ToList(),
                 DislikedUsers = users
                     .Join(context.ForumReactions
-                    .Where(y => !y.IsLike && y.MessageId == forumMessage.Id), u => u.Id, fr => fr.UserId, (u, fr) => u)
+                    .Where(
+                        y => y.Reaction != ReactionType.Like && y.MessageId == forumMessage.Id),
+                        u => u.Id,
+                        fr => fr.UserId,
+                        (u, fr) => u)
                     .ToList(),
                 NestingLevel = 0
             }).OrderByDescending(x => x.ParentId == null).ThenByDescending(x => x.Date).ToList();
@@ -107,30 +116,30 @@ namespace WebRunApplication.Controllers
         }
 
         [HttpPost, Authorize]
-        public async Task<IActionResult> MessageReaction(int messageId, bool isLike)
+        public async Task<IActionResult> MessageReaction(int messageId, ReactionType reaction)
         {
             // todo: user может быть null
             var user = (await userRepository.GetUsersAsync())
                 .FirstOrDefault(x => x.Login == User.Identity!.Name);
 
-            var reaction = await context.ForumReactions
+            var currentReaction = await context.ForumReactions
                 .FirstOrDefaultAsync(x => x.MessageId == messageId);
 
-            if (reaction is not null)
+            if (currentReaction is not null)
             {
-                if (reaction.IsLike != isLike)
+                if (currentReaction.Reaction != reaction)
                 {
-                    context.ForumReactions.Remove(reaction);
+                    context.ForumReactions.Remove(currentReaction);
                     await context.ForumReactions.AddAsync(new ForumReaction
                     {
                         MessageId = messageId,
                         UserId = user.Id,
-                        IsLike = isLike
+                        Reaction = reaction
                     });
                 }
                 else
                 {
-                    context.ForumReactions.Remove(reaction);
+                    context.ForumReactions.Remove(currentReaction);
                 }
             }
             else
@@ -139,7 +148,7 @@ namespace WebRunApplication.Controllers
                 {
                     MessageId = messageId,
                     UserId = user.Id,
-                    IsLike = isLike
+                    Reaction = reaction
                 });
             }
 
