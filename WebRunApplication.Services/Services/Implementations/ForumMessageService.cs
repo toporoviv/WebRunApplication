@@ -3,26 +3,27 @@ using Microsoft.Extensions.Logging;
 using WebRunApplication.Domain.Entities.Forum;
 using WebRunApplication.Domain.Enums;
 using WebRunApplication.Infrastructure.Interfaces;
+using WebRunApplication.Services.Extensions;
 using WebRunApplication.Services.Interfaces;
 
 namespace WebRunApplication.Services.Implementations
 {
-    public class ForumMessageService : IForumMessageService
+    internal class ForumMessageService(
+        ILogger<ForumMessageService> logger,
+        IForumMessageRepository forumMessageRepository)
+        : IForumMessageService
     {
-        private readonly ILogger<ForumMessageService> _logger;
-        private readonly IBaseRepository<ForumMessage> _forumMessageRepository;
-
-        public ForumMessageService(ILogger<ForumMessageService> logger, IBaseRepository<ForumMessage> forumMessageRepository)
-        {
-            _logger = logger;
-            _forumMessageRepository = forumMessageRepository;
-        }
-
-        public async Task<IBaseResponse<ForumMessage>> Create(ForumMessage model)
+        public async Task<IBaseResponse<ForumMessage>> CreateAsync
+        (
+            ForumMessage model,
+            CancellationToken cancellationToken
+        )
         {
             try
             {
-                await _forumMessageRepository.Create(model);
+                await forumMessageRepository.CreateForumMessageAsync(
+                    model.ToForumMessageWithoutId(),
+                    cancellationToken);
 
                 return new BaseResponse<ForumMessage>
                 {
@@ -32,7 +33,7 @@ namespace WebRunApplication.Services.Implementations
             }
             catch (Exception exception)
             {
-                _logger.LogError(exception, $"[{nameof(ForumMessageService)}.{nameof(Create)}] error: {exception.Message}");
+                logger.LogError(exception, $"[{nameof(ForumMessageService)}.{nameof(CreateAsync)}] error: {exception.Message}");
                 return new BaseResponse<ForumMessage>()
                 {
                     StatusCode = StatusCode.InternalServerError,
@@ -41,11 +42,12 @@ namespace WebRunApplication.Services.Implementations
             }
         }
 
-        public async Task<IBaseResponse<bool>> Delete(long id)
+        public async Task<IBaseResponse<bool>> DeleteAsync(int id, CancellationToken cancellationToken)
         {
             try
             {
-                var message = await _forumMessageRepository.GetAll().FirstOrDefaultAsync(x => x.Id == id);
+                var message = await forumMessageRepository.GetForumMessageByIdAsync(id, cancellationToken);
+                
                 if (message is null)
                 {
                     return new BaseResponse<bool>
@@ -55,8 +57,8 @@ namespace WebRunApplication.Services.Implementations
                     };
                 }
 
-                await _forumMessageRepository.Delete(message);
-                _logger.LogInformation($"[{nameof(ForumMessageService)}.{nameof(Delete)}] сообщение удалено");
+                await forumMessageRepository.DeleteForumMessageAsync(message.Id, cancellationToken);
+                logger.LogInformation($"[{nameof(ForumMessageService)}.{nameof(DeleteAsync)}] сообщение удалено (id = {message.Id})");
 
                 return new BaseResponse<bool>
                 {
@@ -66,7 +68,7 @@ namespace WebRunApplication.Services.Implementations
             }
             catch (Exception exception)
             {
-                _logger.LogError(exception, $"[{nameof(ForumMessageService)}.{nameof(Delete)}] error: {exception.Message}");
+                logger.LogError(exception, $"[{nameof(ForumMessageService)}.{nameof(DeleteAsync)}] error: {exception.Message}");
                 return new BaseResponse<bool>()
                 {
                     StatusCode = StatusCode.InternalServerError,
@@ -75,12 +77,14 @@ namespace WebRunApplication.Services.Implementations
             }
         }
 
-        public async Task<IBaseResponse<IEnumerable<ForumMessage>>> GetAll()
+        public async Task<IBaseResponse<IEnumerable<ForumMessage>>> GetAllAsync(CancellationToken cancellationToken)
         {
             try
             {
-                var messages = await _forumMessageRepository.GetAll().ToListAsync();
-                _logger.LogInformation($"[{nameof(ForumMessageService)}.{nameof(GetAll)}] получено сообщений {messages.Count}");
+                var messages = (await forumMessageRepository.GetForumMessages(cancellationToken))
+                    .ToList();
+                
+                logger.LogInformation($"[{nameof(ForumMessageService)}.{nameof(GetAllAsync)}] получено сообщений {messages.Count}");
 
                 return new BaseResponse<IEnumerable<ForumMessage>>
                 {
@@ -90,7 +94,7 @@ namespace WebRunApplication.Services.Implementations
             }
             catch (Exception exception)
             {
-                _logger.LogError(exception, $"[{nameof(ForumMessageService)}.{nameof(GetAll)}] error: {exception.Message}");
+                logger.LogError(exception, $"[{nameof(ForumMessageService)}.{nameof(GetAllAsync)}] error: {exception.Message}");
                 return new BaseResponse<IEnumerable<ForumMessage>>
                 {
                     StatusCode = StatusCode.InternalServerError,

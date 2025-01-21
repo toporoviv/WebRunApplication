@@ -2,7 +2,12 @@
 
 namespace WebRunApplication.Services.Interfaces
 {
-    public interface IForumMessageService : IBaseService<ForumMessage>
+    public interface IForumMessageService
     {
+        Task<IBaseResponse<ForumMessage>> CreateAsync(ForumMessage model, CancellationToken cancellationToken = default);
+
+        Task<IBaseResponse<IEnumerable<ForumMessage>>> GetAllAsync(CancellationToken cancellationToken = default);
+
+        Task<IBaseResponse<bool>> DeleteAsync(int id, CancellationToken cancellationToken = default);
     }
 }

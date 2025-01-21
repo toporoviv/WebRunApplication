@@ -34,4 +34,15 @@ internal static class ModelExtensions
             Answer = helpMessage.Answer
         };
     }
+
+    public static ForumMessage ToForumMessageWithoutId(this Domain.Entities.Forum.ForumMessage forumMessage)
+    {
+        return new ForumMessage
+        {
+            Date = forumMessage.Date,
+            Message = forumMessage.Message,
+            UserId = forumMessage.UserId,
+            ParentId = forumMessage.ParentId
+        };
+    }
 }

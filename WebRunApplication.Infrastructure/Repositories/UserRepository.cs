@@ -12,6 +12,8 @@ namespace WebRunApplication.Infrastructure.Repositories
     {
         public async Task<User> CreateUserAsync(Models.User user, CancellationToken cancellationToken)
         {
+            ArgumentNullException.ThrowIfNull(user);
+            
             await using var connection = await GetAndOpenConnectionAsync(cancellationToken);
 
             var sqlQuery = @$"
@@ -24,15 +26,15 @@ insert into users (login,
                    weight,
                    height,
                    role)
-values (@{nameof(user.Login)},
-        @{nameof(user.Password)},
-        @{nameof(user.Email)}),
-        @{nameof(user.Fullname)},
-        @{nameof(user.Age)},
-        @{nameof(user.Gender)},
-        @{nameof(user.Weight)},
-        @{nameof(user.Height)},
-        @{nameof(user.Role)}
+            values (@{nameof(user.Login)},
+                    @{nameof(user.Password)},
+                    @{nameof(user.Email)}),
+                    @{nameof(user.Fullname)},
+                    @{nameof(user.Age)},
+                    @{nameof(user.Gender)},
+                    @{nameof(user.Weight)},
+                    @{nameof(user.Height)},
+                    @{nameof(user.Role)}
         
         returning id, login, password, email, fullname, age, gender, weight, height, role";
             
@@ -41,18 +43,22 @@ values (@{nameof(user.Login)},
 
         public async Task<User> UpdateUserAsync(int userId, Models.User user, CancellationToken cancellationToken)
         {
+            ArgumentNullException.ThrowIfNull(user);
+            
             await using var connection = await GetAndOpenConnectionAsync(cancellationToken);
 
             var sqlQuery = @"update users
-set login = @Login,
-    password = @Password,
-    email = @Email,
-    fullname = @Fullname,
-    age = @Age,
-    gender = @Gender,
-    weight = @Weight,
-    height = @Height
- where id = @Id";
+                    set login = @Login,
+                        password = @Password,
+                        email = @Email,
+                        fullname = @Fullname,
+                        age = @Age,
+                        gender = @Gender,
+                        weight = @Weight,
+                        height = @Height,
+                        role = @Role
+                     where id = @Id
+                     returning id, login, password, email, fullname, age, gender, weight, height, role";
             
             var sqlParams = new
             {
@@ -64,7 +70,8 @@ set login = @Login,
                 Age = user.Age,
                 Gender = user.Gender,
                 Weight = user.Weight,
-                Height = user.Height
+                Height = user.Height,
+                Role = user.Role
             };
 
             return await connection.QuerySingleAsync<User>(sqlQuery, sqlParams);
@@ -96,8 +103,9 @@ set login = @Login,
         {
             await using var connection = await GetAndOpenConnectionAsync(cancellationToken);
 
-            var sqlQuery = @"delete from users where id = @Id returning
-                  id, login, password, email, fullname, age, gender, weight, height, role";
+            var sqlQuery = @"delete from users where id = @Id 
+                returning id, login, password, email, fullname, age, gender, weight, height, role";
+            
             var sqlParams = new
             {
                 Id = id

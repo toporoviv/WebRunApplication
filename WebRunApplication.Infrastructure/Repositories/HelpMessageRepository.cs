@@ -16,6 +16,8 @@ namespace WebRunApplication.Infrastructure.Repositories
             CancellationToken cancellationToken = default
         )
         {
+            ArgumentNullException.ThrowIfNull(helpMessage);
+            
             await using var connection = await GetAndOpenConnectionAsync(cancellationToken);
 
             var sqlQuery = @$"insert into help_messages(
@@ -82,14 +84,17 @@ namespace WebRunApplication.Infrastructure.Repositories
             CancellationToken cancellationToken = default
         )
         {
+            ArgumentNullException.ThrowIfNull(helpMessage);
+            
             await using var connection = await GetAndOpenConnectionAsync(cancellationToken);
 
             var sqlQuery = @"update help_messages
-set user_id = @UserId,
-    date = @Date,
-    question = @Question,
-    answer = @Answer
- where id = @Id";
+                set user_id = @UserId,
+                    date = @Date,
+                    question = @Question,
+                    answer = @Answer
+                 where id = @Id
+                 returning id, user_id, date, question, answer";
             
             var sqlParams = new
             {
@@ -106,7 +111,9 @@ set user_id = @UserId,
         {
             await using var connection = await GetAndOpenConnectionAsync(cancellationToken);
 
-            var sqlQuery = "delete from help_messages where id = @Id";
+            var sqlQuery = @"delete from help_messages where id = @Id
+                returning id, user_id, date, question, answer";
+            
             var sqlParams = new
             {
                 Id = id

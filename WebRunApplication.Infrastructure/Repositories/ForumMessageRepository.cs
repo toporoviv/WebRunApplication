@@ -1,40 +1,101 @@
-﻿using WebRunApplication.Domain.Entities.Forum;
+﻿using Dapper;
+using Microsoft.Extensions.Options;
+using WebRunApplication.Domain.Entities.Forum;
 using WebRunApplication.Infrastructure.Interfaces;
+using WebRunApplication.Infrastructure.Options;
 
 namespace WebRunApplication.Infrastructure.Repositories
 {
-    public class ForumMessageRepository : IBaseRepository<ForumMessage>
+    internal class ForumMessageRepository(IOptions<PostgreOptions> options, ApplicationDbContext db)
+        : DbRepository(options.Value),
+            IForumMessageRepository
     {
-        private readonly ApplicationDbContext _db;
-
-        public ForumMessageRepository(ApplicationDbContext db)
+        public async Task<ForumMessage> CreateForumMessageAsync
+        (
+            Models.ForumMessage forumMessage,
+            CancellationToken cancellationToken = default
+        )
         {
-            _db = db;
+            ArgumentNullException.ThrowIfNull(forumMessage);
+            
+            await using var connection = await GetAndOpenConnectionAsync(cancellationToken);
+
+            var sqlQuery = @$"insert into forum_messages(
+                           user_id,
+                           parent_id,
+                           date,
+                           message)
+                       values(
+                            @{nameof(forumMessage.UserId)},
+                            @{nameof(forumMessage.ParentId)},
+                            @{nameof(forumMessage.Date)},
+                            @{nameof(forumMessage.Message)}
+                       )
+                       returning id, user_id, parent_id, date, message";
+
+            return await connection.QueryFirstAsync<ForumMessage>(sqlQuery);
         }
 
-        public IQueryable<ForumMessage> GetAll()
+        public async Task<ForumMessage?> GetForumMessageByIdAsync
+        (
+            int id,
+            CancellationToken cancellationToken = default
+        )
         {
-            return _db.ForumMessages;
+            await using var connection = await GetAndOpenConnectionAsync(cancellationToken);
+
+            var sqlQuery = "select * from forum_messages where id = @Id";
+            var sqlParams = new
+            {
+                Id = id
+            };
+
+            return await connection.QueryFirstOrDefaultAsync<ForumMessage>(sqlQuery, sqlParams);
         }
 
-        public async Task Delete(ForumMessage entity)
+        public async Task<IEnumerable<ForumMessage>> GetForumMessages(CancellationToken cancellationToken = default)
         {
-            _db.ForumMessages.Remove(entity);
-            await _db.SaveChangesAsync();
+            await using var connection = await GetAndOpenConnectionAsync(cancellationToken);
+
+            var sqlQuery = "select * from forum_messages";
+
+            return await connection.QueryAsync<ForumMessage>(sqlQuery);
         }
 
-        public async Task Create(ForumMessage entity)
+        public async Task<ForumMessage> UpdateForumMessageAsync
+        (
+            int id,
+            Models.ForumMessage forumMessage,
+            CancellationToken cancellationToken = default
+        )
         {
-            await _db.ForumMessages.AddAsync(entity);
-            await _db.SaveChangesAsync();
+            ArgumentNullException.ThrowIfNull(forumMessage);
+
+            await using var connection = await GetAndOpenConnectionAsync(cancellationToken);
+
+            var sqlQuery = @"update forum_messages
+                set user_id = @UserId,
+                    parent_id = @ParentId,
+                    date = @Date,
+                    message = @Message
+                where id = @Id
+                returning id, user_id, parent_id, date, message";
+
+            return await connection.QuerySingleAsync<ForumMessage>(sqlQuery);
         }
 
-        public async Task<ForumMessage> Update(ForumMessage entity)
+        public async Task<ForumMessage?> DeleteForumMessageAsync
+        (
+            int id,
+            CancellationToken cancellationToken = default
+        )
         {
-            _db.ForumMessages.Update(entity);
-            await _db.SaveChangesAsync();
+            await using var connection = await GetAndOpenConnectionAsync(cancellationToken);
 
-            return entity;
+            var sqlQuery = @"delete from forum_messages where id = @Id
+                returning id, user_id, parent_id, date, message";
+
+            return await connection.QueryFirstOrDefaultAsync<ForumMessage>(sqlQuery);
         }
     }
 }

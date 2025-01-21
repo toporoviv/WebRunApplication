@@ -26,8 +26,6 @@ namespace WebRunApplication.Infrastructure
 
         public DbSet<MailingTopicSubscriber> MailingTopicSubscribers { get; set; }
 
-        public DbSet<ForumMessage> ForumMessages { get; set; }
-
         public DbSet<ForumReaction> ForumReactions { get; set; }
     }
 }

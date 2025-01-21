@@ -12,7 +12,8 @@ namespace WebRunApplication.Controllers
     public class ForumController
     (
         ApplicationDbContext context,
-        IUserRepository userRepository
+        IUserRepository userRepository,
+        IForumMessageRepository forumMessageRepository
     ) : Controller
     {
         [HttpGet]
@@ -30,31 +31,37 @@ namespace WebRunApplication.Controllers
 
             var users = (await userRepository.GetUsersAsync()).ToList();
             
-            var messageViewModels = context.ForumMessages.Select(forumMessage => new MessageViewModel
-            {
-                Id = forumMessage.Id,
-                ParentId = forumMessage.ParentId,
-                Fullname = users.FirstOrDefault(z => z.Id == forumMessage.UserId).Fullname,
-                Message = forumMessage.Message,
-                Date = forumMessage.Date,
-                LikedUsers = users
-                    .Join(context.ForumReactions
-                    .Where(
-                        y => y.Reaction == ReactionType.Like && y.MessageId == forumMessage.Id),
-                        u => u.Id,
-                        fr => fr.UserId, 
-                        (u, fr) => u)
-                    .ToList(),
-                DislikedUsers = users
-                    .Join(context.ForumReactions
-                    .Where(
-                        y => y.Reaction != ReactionType.Like && y.MessageId == forumMessage.Id),
-                        u => u.Id,
-                        fr => fr.UserId,
-                        (u, fr) => u)
-                    .ToList(),
-                NestingLevel = 0
-            }).OrderByDescending(x => x.ParentId == null).ThenByDescending(x => x.Date).ToList();
+            var messageViewModels = (await forumMessageRepository.GetForumMessages())
+                .Select(forumMessage => new MessageViewModel
+                {
+                    Id = forumMessage.Id,
+                    ParentId = forumMessage.ParentId,
+                    Fullname = users.FirstOrDefault(z => z.Id == forumMessage.UserId).Fullname,
+                    Message = forumMessage.Message,
+                    Date = forumMessage.Date,
+                    LikedUsers = users
+                        .Join(context.ForumReactions
+                        .Where(
+                            forumReaction => forumReaction.Reaction == ReactionType.Like &&
+                                             forumReaction.MessageId == forumMessage.Id),
+                            user => user.Id,
+                            forumReaction => forumReaction.UserId, 
+                            (user, _) => user)
+                        .ToList(),
+                    DislikedUsers = users
+                        .Join(context.ForumReactions
+                        .Where(
+                            forumReaction => forumReaction.Reaction != ReactionType.Like && 
+                                             forumReaction.MessageId == forumMessage.Id),
+                            user => user.Id,
+                            forumReaction => forumReaction.UserId,
+                            (user, _) => user)
+                        .ToList(),
+                    NestingLevel = 0
+                })
+                .OrderByDescending(x => x.ParentId == null)
+                .ThenByDescending(x => x.Date)
+                .ToList();
 
             var result = new List<MessageViewModel>();
 
@@ -102,15 +109,13 @@ namespace WebRunApplication.Controllers
             var user = (await userRepository.GetUsersAsync())
                 .FirstOrDefault(x => x.Login == User.Identity!.Name);
             
-            context.ForumMessages.Add(new ForumMessage
+            await forumMessageRepository.CreateForumMessageAsync(new Infrastructure.Models.ForumMessage
             {
                 Date = DateTime.Now,
                 UserId = user.Id,
                 Message = message,
                 ParentId = null
             });
-            
-            await context.SaveChangesAsync();
 
             return RedirectToAction("Index", "Forum");
         }
@@ -170,15 +175,13 @@ namespace WebRunApplication.Controllers
             var user = (await userRepository.GetUsersAsync())
                 .FirstOrDefault(x => x.Login == User.Identity!.Name);
 
-            await context.ForumMessages.AddAsync(new ForumMessage 
+            await forumMessageRepository.CreateForumMessageAsync(new Infrastructure.Models.ForumMessage 
             {
                 Date = DateTime.Now,
                 Message = message,
                 ParentId = messageId,
                 UserId = user.Id 
             });
-
-            await context.SaveChangesAsync();
 
             return RedirectToAction("Index", "Forum");
         }
