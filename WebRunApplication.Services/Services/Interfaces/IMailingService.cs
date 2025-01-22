@@ -1,8 +1,7 @@
 ﻿using WebRunApplication.Domain.Entities;
 
-namespace WebRunApplication.Services.Interfaces
+namespace WebRunApplication.Services.Interfaces;
+
+public interface IMailingService : IBaseService<MailingMessage>
 {
-    public interface IMailingService : IBaseService<MailingMessage>
-    {
-    }
 }

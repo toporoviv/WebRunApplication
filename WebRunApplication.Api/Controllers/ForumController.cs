@@ -7,148 +7,134 @@ using WebRunApplication.Infrastructure;
 using WebRunApplication.Infrastructure.Interfaces;
 using WebRunApplication.Services.Models;
 
-namespace WebRunApplication.Controllers
+namespace WebRunApplication.Controllers;
+
+public class ForumController
+(
+    ApplicationDbContext context,
+    IUserRepository userRepository,
+    IForumMessageRepository forumMessageRepository
+) : Controller
 {
-    public class ForumController
-    (
-        ApplicationDbContext context,
-        IUserRepository userRepository,
-        IForumMessageRepository forumMessageRepository
-    ) : Controller
+    [HttpGet]
+    public async Task<IActionResult> Index()
     {
-        [HttpGet]
-        public async Task<IActionResult> Index()
-        {
-            var forumMessages = await GetForumMessages();
+        var forumMessages = await GetForumMessages();
             
-            return View(forumMessages);
+        return View(forumMessages);
+    }
+
+    [NonAction]
+    private async Task<List<MessageViewModel>> GetForumMessages()
+    {
+        // todo: тут надо сделать проверку на null (не факт, что одну...)
+
+        var users = (await userRepository.GetUsersAsync()).ToList();
+            
+        var messageViewModels = (await forumMessageRepository.GetForumMessages())
+            .Select(forumMessage => new MessageViewModel
+            {
+                Id = forumMessage.Id,
+                ParentId = forumMessage.ParentId,
+                Fullname = users.FirstOrDefault(z => z.Id == forumMessage.UserId).Fullname,
+                Message = forumMessage.Message,
+                Date = forumMessage.Date,
+                LikedUsers = users
+                    .Join(context.ForumReactions
+                            .Where(
+                                forumReaction => forumReaction.Reaction == ReactionType.Like &&
+                                                 forumReaction.MessageId == forumMessage.Id),
+                        user => user.Id,
+                        forumReaction => forumReaction.UserId, 
+                        (user, _) => user)
+                    .ToList(),
+                DislikedUsers = users
+                    .Join(context.ForumReactions
+                            .Where(
+                                forumReaction => forumReaction.Reaction != ReactionType.Like && 
+                                                 forumReaction.MessageId == forumMessage.Id),
+                        user => user.Id,
+                        forumReaction => forumReaction.UserId,
+                        (user, _) => user)
+                    .ToList(),
+                NestingLevel = 0
+            })
+            .OrderByDescending(x => x.ParentId == null)
+            .ThenByDescending(x => x.Date)
+            .ToList();
+
+        var result = new List<MessageViewModel>();
+
+        foreach (var messageViewModel in messageViewModels)
+        {
+            if (messageViewModel.ParentId is null) 
+                result = GetMessages(result, messageViewModels, messageViewModel, 0);
+            else break;
         }
 
-        [NonAction]
-        private async Task<List<MessageViewModel>> GetForumMessages()
-        {
-            // todo: тут надо сделать проверку на null (не факт, что одну...)
+        return result;
+    }
 
-            var users = (await userRepository.GetUsersAsync()).ToList();
+    [NonAction]
+    private List<MessageViewModel> GetMessages
+    (
+        List<MessageViewModel> result,
+        List<MessageViewModel> messageViewModels,
+        MessageViewModel currentMessage,
+        uint currentLevel
+    )
+    {
+        currentMessage.NestingLevel = currentLevel;
+        result.Add(currentMessage);
             
-            var messageViewModels = (await forumMessageRepository.GetForumMessages())
-                .Select(forumMessage => new MessageViewModel
-                {
-                    Id = forumMessage.Id,
-                    ParentId = forumMessage.ParentId,
-                    Fullname = users.FirstOrDefault(z => z.Id == forumMessage.UserId).Fullname,
-                    Message = forumMessage.Message,
-                    Date = forumMessage.Date,
-                    LikedUsers = users
-                        .Join(context.ForumReactions
-                        .Where(
-                            forumReaction => forumReaction.Reaction == ReactionType.Like &&
-                                             forumReaction.MessageId == forumMessage.Id),
-                            user => user.Id,
-                            forumReaction => forumReaction.UserId, 
-                            (user, _) => user)
-                        .ToList(),
-                    DislikedUsers = users
-                        .Join(context.ForumReactions
-                        .Where(
-                            forumReaction => forumReaction.Reaction != ReactionType.Like && 
-                                             forumReaction.MessageId == forumMessage.Id),
-                            user => user.Id,
-                            forumReaction => forumReaction.UserId,
-                            (user, _) => user)
-                        .ToList(),
-                    NestingLevel = 0
-                })
-                .OrderByDescending(x => x.ParentId == null)
-                .ThenByDescending(x => x.Date)
-                .ToList();
-
-            var result = new List<MessageViewModel>();
-
-            foreach (var messageViewModel in messageViewModels)
-            {
-                if (messageViewModel.ParentId is null) 
-                    result = GetMessages(result, messageViewModels, messageViewModel, 0);
-                else break;
-            }
-
-            return result;
+        var orderedMessagesViewModels = messageViewModels
+            .Where(m => m.ParentId == currentMessage.Id)
+            .OrderByDescending(x => x.Date)
+            .ToList();
+            
+        foreach (var messageViewModel in orderedMessagesViewModels)
+        {
+            result = GetMessages(result, messageViewModels, messageViewModel, currentLevel + 1);
         }
 
-        [NonAction]
-        private List<MessageViewModel> GetMessages
-        (
-            List<MessageViewModel> result,
-            List<MessageViewModel> messageViewModels,
-            MessageViewModel currentMessage,
-            uint currentLevel
-        )
-        {
-            currentMessage.NestingLevel = currentLevel;
-            result.Add(currentMessage);
+        return result;
+    }
+
+    [HttpPost]
+    [Authorize]
+    public async Task<IActionResult> Send(string message)
+    {
+        // todo: User.Identity может ли быть null в данном случае?
+        // todo: user может быть null
+        var user = (await userRepository.GetUsersAsync())
+            .FirstOrDefault(x => x.Login == User.Identity!.Name);
             
-            var orderedMessagesViewModels = messageViewModels
-                .Where(m => m.ParentId == currentMessage.Id)
-                .OrderByDescending(x => x.Date)
-                .ToList();
-            
-            foreach (var messageViewModel in orderedMessagesViewModels)
-            {
-                result = GetMessages(result, messageViewModels, messageViewModel, currentLevel + 1);
-            }
-
-            return result;
-        }
-
-        [HttpPost]
-        [Authorize]
-        public async Task<IActionResult> Send(string message)
+        await forumMessageRepository.CreateForumMessageAsync(new Infrastructure.Models.ForumMessage
         {
-            // todo: User.Identity может ли быть null в данном случае?
-            // todo: user может быть null
-            var user = (await userRepository.GetUsersAsync())
-                .FirstOrDefault(x => x.Login == User.Identity!.Name);
-            
-            await forumMessageRepository.CreateForumMessageAsync(new Infrastructure.Models.ForumMessage
-            {
-                Date = DateTime.Now,
-                UserId = user.Id,
-                Message = message,
-                ParentId = null
-            });
+            Date = DateTime.Now,
+            UserId = user.Id,
+            Message = message,
+            ParentId = null
+        });
 
-            return RedirectToAction("Index", "Forum");
-        }
+        return RedirectToAction("Index", "Forum");
+    }
 
-        [HttpPost, Authorize]
-        public async Task<IActionResult> MessageReaction(int messageId, ReactionType reaction)
+    [HttpPost, Authorize]
+    public async Task<IActionResult> MessageReaction(int messageId, ReactionType reaction)
+    {
+        // todo: user может быть null
+        var user = (await userRepository.GetUsersAsync())
+            .FirstOrDefault(x => x.Login == User.Identity!.Name);
+
+        var currentReaction = await context.ForumReactions
+            .FirstOrDefaultAsync(x => x.MessageId == messageId);
+
+        if (currentReaction is not null)
         {
-            // todo: user может быть null
-            var user = (await userRepository.GetUsersAsync())
-                .FirstOrDefault(x => x.Login == User.Identity!.Name);
-
-            var currentReaction = await context.ForumReactions
-                .FirstOrDefaultAsync(x => x.MessageId == messageId);
-
-            if (currentReaction is not null)
+            if (currentReaction.Reaction != reaction)
             {
-                if (currentReaction.Reaction != reaction)
-                {
-                    context.ForumReactions.Remove(currentReaction);
-                    await context.ForumReactions.AddAsync(new ForumReaction
-                    {
-                        MessageId = messageId,
-                        UserId = user.Id,
-                        Reaction = reaction
-                    });
-                }
-                else
-                {
-                    context.ForumReactions.Remove(currentReaction);
-                }
-            }
-            else
-            {
+                context.ForumReactions.Remove(currentReaction);
                 await context.ForumReactions.AddAsync(new ForumReaction
                 {
                     MessageId = messageId,
@@ -156,34 +142,47 @@ namespace WebRunApplication.Controllers
                     Reaction = reaction
                 });
             }
-
-            await context.SaveChangesAsync();
-
-            return RedirectToAction("Index", "Forum");
-        }
-
-        [HttpPost, Authorize]
-        public async Task<IActionResult> SendComment(int messageId, string message)
-        {
-            if (string.IsNullOrWhiteSpace(message))
+            else
             {
-                // todo: тут нужно выкинуть exception 
-                message = " ";
+                context.ForumReactions.Remove(currentReaction);
             }
-
-            // todo: user может быть null
-            var user = (await userRepository.GetUsersAsync())
-                .FirstOrDefault(x => x.Login == User.Identity!.Name);
-
-            await forumMessageRepository.CreateForumMessageAsync(new Infrastructure.Models.ForumMessage 
-            {
-                Date = DateTime.Now,
-                Message = message,
-                ParentId = messageId,
-                UserId = user.Id 
-            });
-
-            return RedirectToAction("Index", "Forum");
         }
+        else
+        {
+            await context.ForumReactions.AddAsync(new ForumReaction
+            {
+                MessageId = messageId,
+                UserId = user.Id,
+                Reaction = reaction
+            });
+        }
+
+        await context.SaveChangesAsync();
+
+        return RedirectToAction("Index", "Forum");
+    }
+
+    [HttpPost, Authorize]
+    public async Task<IActionResult> SendComment(int messageId, string message)
+    {
+        if (string.IsNullOrWhiteSpace(message))
+        {
+            // todo: тут нужно выкинуть exception 
+            message = " ";
+        }
+
+        // todo: user может быть null
+        var user = (await userRepository.GetUsersAsync())
+            .FirstOrDefault(x => x.Login == User.Identity!.Name);
+
+        await forumMessageRepository.CreateForumMessageAsync(new Infrastructure.Models.ForumMessage 
+        {
+            Date = DateTime.Now,
+            Message = message,
+            ParentId = messageId,
+            UserId = user.Id 
+        });
+
+        return RedirectToAction("Index", "Forum");
     }
 }

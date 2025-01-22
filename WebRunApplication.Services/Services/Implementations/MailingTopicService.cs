@@ -5,143 +5,142 @@ using WebRunApplication.Domain.Enums;
 using WebRunApplication.Infrastructure.Interfaces;
 using WebRunApplication.Services.Interfaces;
 
-namespace WebRunApplication.Services.Implementations
+namespace WebRunApplication.Services.Implementations;
+
+public class MailingTopicService : IMailingTopicService
 {
-    public class MailingTopicService : IMailingTopicService
+    private readonly ILogger<MailingTopicService> _logger;
+    private readonly IBaseRepository<MailingTopic> _mailingTopicRepository;
+
+    public MailingTopicService(ILogger<MailingTopicService> logger, IBaseRepository<MailingTopic> mailingTopicRepository)
     {
-        private readonly ILogger<MailingTopicService> _logger;
-        private readonly IBaseRepository<MailingTopic> _mailingTopicRepository;
+        _logger = logger;
+        _mailingTopicRepository = mailingTopicRepository;
+    }
 
-        public MailingTopicService(ILogger<MailingTopicService> logger, IBaseRepository<MailingTopic> mailingTopicRepository)
+    public async Task<IBaseResponse<MailingTopic>> Create(MailingTopic model)
+    {
+        try
         {
-            _logger = logger;
-            _mailingTopicRepository = mailingTopicRepository;
-        }
-
-        public async Task<IBaseResponse<MailingTopic>> Create(MailingTopic model)
-        {
-            try
+            var mailingTopic = await _mailingTopicRepository.GetAll().FirstOrDefaultAsync(x => x.Title == model.Title);
+            if (mailingTopic is not null)
             {
-                var mailingTopic = await _mailingTopicRepository.GetAll().FirstOrDefaultAsync(x => x.Title == model.Title);
-                if (mailingTopic is not null)
-                {
-                    return new BaseResponse<MailingTopic>
-                    {
-                        StatusCode = StatusCode.AlreadyExists,
-                        Description = "Рассылка с такой темой уже есть"
-                    };
-                }
-
-                await _mailingTopicRepository.Create(model);
-
                 return new BaseResponse<MailingTopic>
                 {
-                    StatusCode = StatusCode.OK,
-                    Data = model
+                    StatusCode = StatusCode.AlreadyExists,
+                    Description = "Рассылка с такой темой уже есть"
                 };
             }
-            catch(Exception exception)
+
+            await _mailingTopicRepository.Create(model);
+
+            return new BaseResponse<MailingTopic>
             {
-                _logger.LogError(exception, $"[{nameof(MailingTopicService)}.{nameof(Create)}] error: {exception.Message}");
-                return new BaseResponse<MailingTopic>()
-                {
-                    StatusCode = StatusCode.InternalServerError,
-                    Description = $"Внутренняя ошибка: {exception.Message}"
-                };
-            }
+                StatusCode = StatusCode.OK,
+                Data = model
+            };
         }
-
-        public async Task<IBaseResponse<bool>> Delete(long id)
+        catch(Exception exception)
         {
-            try
+            _logger.LogError(exception, $"[{nameof(MailingTopicService)}.{nameof(Create)}] error: {exception.Message}");
+            return new BaseResponse<MailingTopic>()
             {
-                var mailingTopic = await _mailingTopicRepository.GetAll().FirstOrDefaultAsync(x => x.Id == id);
-                if (mailingTopic is null)
-                {
-                    return new BaseResponse<bool>
-                    {
-                        StatusCode = StatusCode.NotFound,
-                        Data = false
-                    };
-                }
+                StatusCode = StatusCode.InternalServerError,
+                Description = $"Внутренняя ошибка: {exception.Message}"
+            };
+        }
+    }
 
-                await _mailingTopicRepository.Delete(mailingTopic);
-                _logger.LogInformation($"[{nameof(MailingTopicService)}.{nameof(Delete)}] тема рассылки удалена");
-
+    public async Task<IBaseResponse<bool>> Delete(long id)
+    {
+        try
+        {
+            var mailingTopic = await _mailingTopicRepository.GetAll().FirstOrDefaultAsync(x => x.Id == id);
+            if (mailingTopic is null)
+            {
                 return new BaseResponse<bool>
                 {
-                    StatusCode = StatusCode.OK,
-                    Data = true
+                    StatusCode = StatusCode.NotFound,
+                    Data = false
                 };
             }
-            catch (Exception exception)
+
+            await _mailingTopicRepository.Delete(mailingTopic);
+            _logger.LogInformation($"[{nameof(MailingTopicService)}.{nameof(Delete)}] тема рассылки удалена");
+
+            return new BaseResponse<bool>
             {
-                _logger.LogError(exception, $"[{nameof(MailingTopicService)}.{nameof(Delete)}] error: {exception.Message}");
-                return new BaseResponse<bool>()
-                {
-                    StatusCode = StatusCode.InternalServerError,
-                    Description = $"Внутренняя ошибка: {exception.Message}"
-                };
-            }
+                StatusCode = StatusCode.OK,
+                Data = true
+            };
         }
-
-        public async Task<IBaseResponse<IEnumerable<MailingTopic>>> GetAll()
+        catch (Exception exception)
         {
-            try
+            _logger.LogError(exception, $"[{nameof(MailingTopicService)}.{nameof(Delete)}] error: {exception.Message}");
+            return new BaseResponse<bool>()
             {
-                var mailingTopics = await _mailingTopicRepository.GetAll().ToListAsync();
-                _logger.LogInformation($"[{nameof(MailingTopicService)}.{nameof(GetAll)}] получено тем рассылок {mailingTopics.Count}");
-
-                return new BaseResponse<IEnumerable<MailingTopic>>
-                {
-                    Data = mailingTopics,
-                    StatusCode = StatusCode.OK,
-                };
-            }
-            catch (Exception exception)
-            {
-                _logger.LogError(exception, $"[{nameof(MailingTopicService)}.{nameof(GetAll)}] error: {exception.Message}");
-                return new BaseResponse<IEnumerable<MailingTopic>>
-                {
-                    StatusCode = StatusCode.InternalServerError,
-                    Description = $"Внутренняя ошибка: {exception.Message}"
-                };
-            }
+                StatusCode = StatusCode.InternalServerError,
+                Description = $"Внутренняя ошибка: {exception.Message}"
+            };
         }
+    }
 
-        public async Task<IBaseResponse<bool>> Update(MailingTopic model)
+    public async Task<IBaseResponse<IEnumerable<MailingTopic>>> GetAll()
+    {
+        try
         {
-            try
+            var mailingTopics = await _mailingTopicRepository.GetAll().ToListAsync();
+            _logger.LogInformation($"[{nameof(MailingTopicService)}.{nameof(GetAll)}] получено тем рассылок {mailingTopics.Count}");
+
+            return new BaseResponse<IEnumerable<MailingTopic>>
             {
-                var mailingTopic = await _mailingTopicRepository.GetAll().FirstOrDefaultAsync(x => x.Id == model.Id);
-                if (mailingTopic is null)
-                {
-                    return new BaseResponse<bool>
-                    {
-                        StatusCode = StatusCode.NotFound,
-                        Data = false
-                    };
-                }
+                Data = mailingTopics,
+                StatusCode = StatusCode.OK,
+            };
+        }
+        catch (Exception exception)
+        {
+            _logger.LogError(exception, $"[{nameof(MailingTopicService)}.{nameof(GetAll)}] error: {exception.Message}");
+            return new BaseResponse<IEnumerable<MailingTopic>>
+            {
+                StatusCode = StatusCode.InternalServerError,
+                Description = $"Внутренняя ошибка: {exception.Message}"
+            };
+        }
+    }
 
-                mailingTopic.Title = model.Title;
-
-                await _mailingTopicRepository.Update(mailingTopic);
-
+    public async Task<IBaseResponse<bool>> Update(MailingTopic model)
+    {
+        try
+        {
+            var mailingTopic = await _mailingTopicRepository.GetAll().FirstOrDefaultAsync(x => x.Id == model.Id);
+            if (mailingTopic is null)
+            {
                 return new BaseResponse<bool>
                 {
-                    Data = true,
-                    StatusCode = StatusCode.OK
+                    StatusCode = StatusCode.NotFound,
+                    Data = false
                 };
             }
-            catch(Exception exception)
+
+            mailingTopic.Title = model.Title;
+
+            await _mailingTopicRepository.Update(mailingTopic);
+
+            return new BaseResponse<bool>
             {
-                _logger.LogError(exception, $"[{nameof(MailingTopicService)}.{nameof(Update)}] error: {exception.Message}");
-                return new BaseResponse<bool>
-                {
-                    StatusCode = StatusCode.InternalServerError,
-                    Description = $"Внутренняя ошибка: {exception.Message}"
-                };
-            }
+                Data = true,
+                StatusCode = StatusCode.OK
+            };
+        }
+        catch(Exception exception)
+        {
+            _logger.LogError(exception, $"[{nameof(MailingTopicService)}.{nameof(Update)}] error: {exception.Message}");
+            return new BaseResponse<bool>
+            {
+                StatusCode = StatusCode.InternalServerError,
+                Description = $"Внутренняя ошибка: {exception.Message}"
+            };
         }
     }
 }

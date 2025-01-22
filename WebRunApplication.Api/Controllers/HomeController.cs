@@ -1,14 +1,13 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace WebRunApplication.Controllers
+namespace WebRunApplication.Controllers;
+
+[AllowAnonymous]
+public class HomeController : Controller
 {
-    [AllowAnonymous]
-    public class HomeController : Controller
+    public IActionResult Index()
     {
-        public IActionResult Index()
-        {
-            return View(); 
-        }
+        return View(); 
     }
 }

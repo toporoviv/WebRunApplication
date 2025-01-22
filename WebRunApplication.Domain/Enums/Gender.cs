@@ -1,8 +1,7 @@
-﻿namespace WebRunApplication.Domain.Enums
+﻿namespace WebRunApplication.Domain.Enums;
+
+public enum Gender
 {
-    public enum Gender
-    {
-        Female, 
-        Male
-    }
+    Female, 
+    Male
 }

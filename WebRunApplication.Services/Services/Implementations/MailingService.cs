@@ -5,98 +5,97 @@ using WebRunApplication.Domain.Enums;
 using WebRunApplication.Infrastructure.Interfaces;
 using WebRunApplication.Services.Interfaces;
 
-namespace WebRunApplication.Services.Implementations
+namespace WebRunApplication.Services.Implementations;
+
+public class MailingService : IMailingService
 {
-    public class MailingService : IMailingService
+    private readonly ILogger<MailingService> _logger;
+    private readonly IBaseRepository<MailingMessage> _mailingRepository;
+
+    public MailingService(ILogger<MailingService> logger, IBaseRepository<MailingMessage> mailingRepository)
     {
-        private readonly ILogger<MailingService> _logger;
-        private readonly IBaseRepository<MailingMessage> _mailingRepository;
+        _logger = logger;
+        _mailingRepository = mailingRepository;
+    }
 
-        public MailingService(ILogger<MailingService> logger, IBaseRepository<MailingMessage> mailingRepository)
+    public async Task<IBaseResponse<MailingMessage>> Create(MailingMessage model)
+    {
+        try
         {
-            _logger = logger;
-            _mailingRepository = mailingRepository;
+            await _mailingRepository.Create(model);
+
+            return new BaseResponse<MailingMessage>
+            {
+                Data = model,
+                StatusCode = StatusCode.OK,
+            };
         }
-
-        public async Task<IBaseResponse<MailingMessage>> Create(MailingMessage model)
+        catch(Exception exception)
         {
-            try
+            _logger.LogError(exception, $"[{nameof(MailingService)}.{nameof(Create)}] error: {exception.Message}");
+            return new BaseResponse<MailingMessage>()
             {
-                await _mailingRepository.Create(model);
-
-                return new BaseResponse<MailingMessage>
-                {
-                    Data = model,
-                    StatusCode = StatusCode.OK,
-                };
-            }
-            catch(Exception exception)
-            {
-                _logger.LogError(exception, $"[{nameof(MailingService)}.{nameof(Create)}] error: {exception.Message}");
-                return new BaseResponse<MailingMessage>()
-                {
-                    StatusCode = StatusCode.InternalServerError,
-                    Description = $"Внутренняя ошибка: {exception.Message}"
-                };
-            }
+                StatusCode = StatusCode.InternalServerError,
+                Description = $"Внутренняя ошибка: {exception.Message}"
+            };
         }
+    }
 
-        public async Task<IBaseResponse<bool>> Delete(long id)
+    public async Task<IBaseResponse<bool>> Delete(long id)
+    {
+        try
         {
-            try
+            var mailing = await _mailingRepository.GetAll().FirstOrDefaultAsync(x => x.Id == id);
+            if (mailing is null)
             {
-                var mailing = await _mailingRepository.GetAll().FirstOrDefaultAsync(x => x.Id == id);
-                if (mailing is null)
-                {
-                    return new BaseResponse<bool>
-                    {
-                        StatusCode = StatusCode.NotFound,
-                        Data = false
-                    };
-                }
-
-                await _mailingRepository.Delete(mailing);
-                _logger.LogInformation($"[{nameof(MailingService)}.{nameof(Delete)}] рассылка удалена");
-
                 return new BaseResponse<bool>
                 {
-                    StatusCode = StatusCode.OK,
-                    Data = true
+                    StatusCode = StatusCode.NotFound,
+                    Data = false
                 };
             }
-            catch (Exception exception)
+
+            await _mailingRepository.Delete(mailing);
+            _logger.LogInformation($"[{nameof(MailingService)}.{nameof(Delete)}] рассылка удалена");
+
+            return new BaseResponse<bool>
             {
-                _logger.LogError(exception, $"[{nameof(MailingService)}.{nameof(Delete)}] error: {exception.Message}");
-                return new BaseResponse<bool>()
-                {
-                    StatusCode = StatusCode.InternalServerError,
-                    Description = $"Внутренняя ошибка: {exception.Message}"
-                };
-            }
+                StatusCode = StatusCode.OK,
+                Data = true
+            };
         }
-
-        public async Task<IBaseResponse<IEnumerable<MailingMessage>>> GetAll()
+        catch (Exception exception)
         {
-            try
+            _logger.LogError(exception, $"[{nameof(MailingService)}.{nameof(Delete)}] error: {exception.Message}");
+            return new BaseResponse<bool>()
             {
-                var mailings = await _mailingRepository.GetAll().ToListAsync();
-                _logger.LogInformation($"[{nameof(MailingService)}.{nameof(GetAll)}] получено рассылок {mailings.Count}");
+                StatusCode = StatusCode.InternalServerError,
+                Description = $"Внутренняя ошибка: {exception.Message}"
+            };
+        }
+    }
 
-                return new BaseResponse<IEnumerable<MailingMessage>>
-                {
-                    Data = mailings,
-                    StatusCode = StatusCode.OK,
-                };
-            }
-            catch(Exception exception)
+    public async Task<IBaseResponse<IEnumerable<MailingMessage>>> GetAll()
+    {
+        try
+        {
+            var mailings = await _mailingRepository.GetAll().ToListAsync();
+            _logger.LogInformation($"[{nameof(MailingService)}.{nameof(GetAll)}] получено рассылок {mailings.Count}");
+
+            return new BaseResponse<IEnumerable<MailingMessage>>
             {
-                _logger.LogError(exception, $"[{nameof(MailingService)}.{nameof(GetAll)}] error: {exception.Message}");
-                return new BaseResponse<IEnumerable<MailingMessage>>
-                {
-                    StatusCode = StatusCode.InternalServerError,
-                    Description = $"Внутренняя ошибка: {exception.Message}"
-                };
-            }
+                Data = mailings,
+                StatusCode = StatusCode.OK,
+            };
+        }
+        catch(Exception exception)
+        {
+            _logger.LogError(exception, $"[{nameof(MailingService)}.{nameof(GetAll)}] error: {exception.Message}");
+            return new BaseResponse<IEnumerable<MailingMessage>>
+            {
+                StatusCode = StatusCode.InternalServerError,
+                Description = $"Внутренняя ошибка: {exception.Message}"
+            };
         }
     }
 }

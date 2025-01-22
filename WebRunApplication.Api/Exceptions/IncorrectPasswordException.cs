@@ -1,12 +1,11 @@
-﻿namespace WebRunApplication.Exceptions
-{
-    public class IncorrectPasswordException : Exception
-    {
-        public string Description { get; private set; }
+﻿namespace WebRunApplication.Exceptions;
 
-        public IncorrectPasswordException()
-        {
-            Description = "Неправильный пароль";
-        }
+public class IncorrectPasswordException : Exception
+{
+    public string Description { get; private set; }
+
+    public IncorrectPasswordException()
+    {
+        Description = "Неправильный пароль";
     }
 }

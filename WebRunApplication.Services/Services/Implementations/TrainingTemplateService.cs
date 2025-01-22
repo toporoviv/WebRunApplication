@@ -5,102 +5,101 @@ using WebRunApplication.Domain.Enums;
 using WebRunApplication.Infrastructure.Interfaces;
 using WebRunApplication.Services.Interfaces;
 
-namespace WebRunApplication.Services.Implementations
+namespace WebRunApplication.Services.Implementations;
+
+public class TrainingTemplateService : ITrainingTemplateService
 {
-    public class TrainingTemplateService : ITrainingTemplateService
+    private readonly ILogger<TrainingTemplateService> _logger;
+    private readonly IBaseRepository<TrainingTemplate> _trainingTemplateRepository;
+
+    public TrainingTemplateService
+    (
+        ILogger<TrainingTemplateService> logger,
+        IBaseRepository<TrainingTemplate> trainingTemplateRepository
+    )
     {
-        private readonly ILogger<TrainingTemplateService> _logger;
-        private readonly IBaseRepository<TrainingTemplate> _trainingTemplateRepository;
+        _logger = logger;
+        _trainingTemplateRepository = trainingTemplateRepository;
+    }
 
-        public TrainingTemplateService
-        (
-            ILogger<TrainingTemplateService> logger,
-            IBaseRepository<TrainingTemplate> trainingTemplateRepository
-        )
+    public async Task<IBaseResponse<TrainingTemplate>> Create(TrainingTemplate model)
+    {
+        try
         {
-            _logger = logger;
-            _trainingTemplateRepository = trainingTemplateRepository;
+            await _trainingTemplateRepository.Create(model);
+
+            return new BaseResponse<TrainingTemplate>
+            {
+                Data = model,
+                StatusCode = StatusCode.OK,
+            };
         }
-
-        public async Task<IBaseResponse<TrainingTemplate>> Create(TrainingTemplate model)
+        catch (Exception exception)
         {
-            try
+            _logger.LogError(exception, $"[{nameof(TrainingTemplateService)}.{nameof(Create)}] error: {exception.Message}");
+            return new BaseResponse<TrainingTemplate>()
             {
-                await _trainingTemplateRepository.Create(model);
-
-                return new BaseResponse<TrainingTemplate>
-                {
-                    Data = model,
-                    StatusCode = StatusCode.OK,
-                };
-            }
-            catch (Exception exception)
-            {
-                _logger.LogError(exception, $"[{nameof(TrainingTemplateService)}.{nameof(Create)}] error: {exception.Message}");
-                return new BaseResponse<TrainingTemplate>()
-                {
-                    StatusCode = StatusCode.InternalServerError,
-                    Description = $"Внутренняя ошибка: {exception.Message}"
-                };
-            }
+                StatusCode = StatusCode.InternalServerError,
+                Description = $"Внутренняя ошибка: {exception.Message}"
+            };
         }
+    }
 
-        public async Task<IBaseResponse<bool>> Delete(long id)
+    public async Task<IBaseResponse<bool>> Delete(long id)
+    {
+        try
         {
-            try
+            var trainingTemplate = await _trainingTemplateRepository.GetAll().FirstOrDefaultAsync(x => x.Id == id);
+            if (trainingTemplate is null)
             {
-                var trainingTemplate = await _trainingTemplateRepository.GetAll().FirstOrDefaultAsync(x => x.Id == id);
-                if (trainingTemplate is null)
-                {
-                    return new BaseResponse<bool>
-                    {
-                        StatusCode = StatusCode.NotFound,
-                        Data = false
-                    };
-                }
-
-                await _trainingTemplateRepository.Delete(trainingTemplate);
-                _logger.LogInformation($"[{nameof(TrainingTemplateService)}.{nameof(Delete)}] сообщение удалено");
-
                 return new BaseResponse<bool>
                 {
-                    StatusCode = StatusCode.OK,
-                    Data = true
+                    StatusCode = StatusCode.NotFound,
+                    Data = false
                 };
             }
-            catch (Exception exception)
+
+            await _trainingTemplateRepository.Delete(trainingTemplate);
+            _logger.LogInformation($"[{nameof(TrainingTemplateService)}.{nameof(Delete)}] сообщение удалено");
+
+            return new BaseResponse<bool>
             {
-                _logger.LogError(exception, $"[{nameof(TrainingTemplateService)}.{nameof(Delete)}] error: {exception.Message}");
-                return new BaseResponse<bool>()
-                {
-                    StatusCode = StatusCode.InternalServerError,
-                    Description = $"Внутренняя ошибка: {exception.Message}"
-                };
-            }
+                StatusCode = StatusCode.OK,
+                Data = true
+            };
         }
-
-        public async Task<IBaseResponse<IEnumerable<TrainingTemplate>>> GetAll()
+        catch (Exception exception)
         {
-            try
+            _logger.LogError(exception, $"[{nameof(TrainingTemplateService)}.{nameof(Delete)}] error: {exception.Message}");
+            return new BaseResponse<bool>()
             {
-                var trainings = await _trainingTemplateRepository.GetAll().ToListAsync();
-                _logger.LogInformation($"[{nameof(TrainingTemplateService)}.{nameof(GetAll)}] получено сообщений {trainings.Count}");
+                StatusCode = StatusCode.InternalServerError,
+                Description = $"Внутренняя ошибка: {exception.Message}"
+            };
+        }
+    }
 
-                return new BaseResponse<IEnumerable<TrainingTemplate>>
-                {
-                    Data = trainings,
-                    StatusCode = StatusCode.OK,
-                };
-            }
-            catch (Exception exception)
+    public async Task<IBaseResponse<IEnumerable<TrainingTemplate>>> GetAll()
+    {
+        try
+        {
+            var trainings = await _trainingTemplateRepository.GetAll().ToListAsync();
+            _logger.LogInformation($"[{nameof(TrainingTemplateService)}.{nameof(GetAll)}] получено сообщений {trainings.Count}");
+
+            return new BaseResponse<IEnumerable<TrainingTemplate>>
             {
-                _logger.LogError(exception, $"[{nameof(TrainingTemplateService)}.{nameof(GetAll)}] error: {exception.Message}");
-                return new BaseResponse<IEnumerable<TrainingTemplate>>
-                {
-                    StatusCode = StatusCode.InternalServerError,
-                    Description = $"Внутренняя ошибка: {exception.Message}"
-                };
-            }
+                Data = trainings,
+                StatusCode = StatusCode.OK,
+            };
+        }
+        catch (Exception exception)
+        {
+            _logger.LogError(exception, $"[{nameof(TrainingTemplateService)}.{nameof(GetAll)}] error: {exception.Message}");
+            return new BaseResponse<IEnumerable<TrainingTemplate>>
+            {
+                StatusCode = StatusCode.InternalServerError,
+                Description = $"Внутренняя ошибка: {exception.Message}"
+            };
         }
     }
 }

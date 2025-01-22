@@ -6,99 +6,98 @@ using WebRunApplication.Infrastructure.Interfaces;
 using WebRunApplication.Services.Extensions;
 using WebRunApplication.Services.Interfaces;
 
-namespace WebRunApplication.Services.Implementations
+namespace WebRunApplication.Services.Implementations;
+
+internal class ForumMessageService(
+    ILogger<ForumMessageService> logger,
+    IForumMessageRepository forumMessageRepository)
+    : IForumMessageService
 {
-    internal class ForumMessageService(
-        ILogger<ForumMessageService> logger,
-        IForumMessageRepository forumMessageRepository)
-        : IForumMessageService
+    public async Task<IBaseResponse<ForumMessage>> CreateAsync
+    (
+        Infrastructure.Models.ForumMessage model,
+        CancellationToken cancellationToken
+    )
     {
-        public async Task<IBaseResponse<ForumMessage>> CreateAsync
-        (
-            Infrastructure.Models.ForumMessage model,
-            CancellationToken cancellationToken
-        )
+        try
         {
-            try
-            {
-                var result = await forumMessageRepository.CreateForumMessageAsync(model, cancellationToken);
+            var result = await forumMessageRepository.CreateForumMessageAsync(model, cancellationToken);
 
-                return new BaseResponse<ForumMessage>
-                {
-                    Data = result,
-                    StatusCode = StatusCode.OK,
-                };
-            }
-            catch (Exception exception)
+            return new BaseResponse<ForumMessage>
             {
-                logger.LogError(exception, $"[{nameof(ForumMessageService)}.{nameof(CreateAsync)}] error: {exception.Message}");
-                return new BaseResponse<ForumMessage>()
-                {
-                    StatusCode = StatusCode.InternalServerError,
-                    Description = $"Внутренняя ошибка: {exception.Message}"
-                };
-            }
+                Data = result,
+                StatusCode = StatusCode.OK,
+            };
         }
-
-        public async Task<IBaseResponse<bool>> DeleteAsync(int id, CancellationToken cancellationToken)
+        catch (Exception exception)
         {
-            try
+            logger.LogError(exception, $"[{nameof(ForumMessageService)}.{nameof(CreateAsync)}] error: {exception.Message}");
+            return new BaseResponse<ForumMessage>()
             {
-                var message = await forumMessageRepository.GetForumMessageByIdAsync(id, cancellationToken);
+                StatusCode = StatusCode.InternalServerError,
+                Description = $"Внутренняя ошибка: {exception.Message}"
+            };
+        }
+    }
+
+    public async Task<IBaseResponse<bool>> DeleteAsync(int id, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var message = await forumMessageRepository.GetForumMessageByIdAsync(id, cancellationToken);
                 
-                if (message is null)
-                {
-                    return new BaseResponse<bool>
-                    {
-                        StatusCode = StatusCode.NotFound,
-                        Data = false
-                    };
-                }
-
-                await forumMessageRepository.DeleteForumMessageAsync(message.Id, cancellationToken);
-                logger.LogInformation($"[{nameof(ForumMessageService)}.{nameof(DeleteAsync)}] сообщение удалено (id = {message.Id})");
-
+            if (message is null)
+            {
                 return new BaseResponse<bool>
                 {
-                    StatusCode = StatusCode.OK,
-                    Data = true
+                    StatusCode = StatusCode.NotFound,
+                    Data = false
                 };
             }
-            catch (Exception exception)
+
+            await forumMessageRepository.DeleteForumMessageAsync(message.Id, cancellationToken);
+            logger.LogInformation($"[{nameof(ForumMessageService)}.{nameof(DeleteAsync)}] сообщение удалено (id = {message.Id})");
+
+            return new BaseResponse<bool>
             {
-                logger.LogError(exception, $"[{nameof(ForumMessageService)}.{nameof(DeleteAsync)}] error: {exception.Message}");
-                return new BaseResponse<bool>()
-                {
-                    StatusCode = StatusCode.InternalServerError,
-                    Description = $"Внутренняя ошибка: {exception.Message}"
-                };
-            }
+                StatusCode = StatusCode.OK,
+                Data = true
+            };
         }
-
-        public async Task<IBaseResponse<IEnumerable<ForumMessage>>> GetAllAsync(CancellationToken cancellationToken)
+        catch (Exception exception)
         {
-            try
+            logger.LogError(exception, $"[{nameof(ForumMessageService)}.{nameof(DeleteAsync)}] error: {exception.Message}");
+            return new BaseResponse<bool>()
             {
-                var messages = (await forumMessageRepository.GetForumMessages(cancellationToken))
-                    .ToList();
-                
-                logger.LogInformation($"[{nameof(ForumMessageService)}.{nameof(GetAllAsync)}] получено сообщений {messages.Count}");
+                StatusCode = StatusCode.InternalServerError,
+                Description = $"Внутренняя ошибка: {exception.Message}"
+            };
+        }
+    }
 
-                return new BaseResponse<IEnumerable<ForumMessage>>
-                {
-                    Data = messages,
-                    StatusCode = StatusCode.OK,
-                };
-            }
-            catch (Exception exception)
+    public async Task<IBaseResponse<IEnumerable<ForumMessage>>> GetAllAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            var messages = (await forumMessageRepository.GetForumMessages(cancellationToken))
+                .ToList();
+                
+            logger.LogInformation($"[{nameof(ForumMessageService)}.{nameof(GetAllAsync)}] получено сообщений {messages.Count}");
+
+            return new BaseResponse<IEnumerable<ForumMessage>>
             {
-                logger.LogError(exception, $"[{nameof(ForumMessageService)}.{nameof(GetAllAsync)}] error: {exception.Message}");
-                return new BaseResponse<IEnumerable<ForumMessage>>
-                {
-                    StatusCode = StatusCode.InternalServerError,
-                    Description = $"Внутренняя ошибка: {exception.Message}"
-                };
-            }
+                Data = messages,
+                StatusCode = StatusCode.OK,
+            };
+        }
+        catch (Exception exception)
+        {
+            logger.LogError(exception, $"[{nameof(ForumMessageService)}.{nameof(GetAllAsync)}] error: {exception.Message}");
+            return new BaseResponse<IEnumerable<ForumMessage>>
+            {
+                StatusCode = StatusCode.InternalServerError,
+                Description = $"Внутренняя ошибка: {exception.Message}"
+            };
         }
     }
 }

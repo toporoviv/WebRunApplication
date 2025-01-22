@@ -1,9 +1,8 @@
 ﻿using WebRunApplication.Domain.Entities;
 
-namespace WebRunApplication.Services.Models
+namespace WebRunApplication.Services.Models;
+
+public class HelpMessageViewModel : HelpMessage
 {
-    public class HelpMessageViewModel : HelpMessage
-    {
-        public string UserFIO { get; set; }
-    }
+    public string UserFIO { get; set; }
 }

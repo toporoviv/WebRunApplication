@@ -1,12 +1,11 @@
-﻿namespace WebRunApplication.Exceptions
-{
-    public class AccountNotFoundException : Exception
-    {
-        public string Description { get; private set; }
+﻿namespace WebRunApplication.Exceptions;
 
-        public AccountNotFoundException()
-        {
-            Description = "Аккаунт не найден";
-        }
+public class AccountNotFoundException : Exception
+{
+    public string Description { get; private set; }
+
+    public AccountNotFoundException()
+    {
+        Description = "Аккаунт не найден";
     }
 }

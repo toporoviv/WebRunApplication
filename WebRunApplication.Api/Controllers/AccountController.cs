@@ -5,80 +5,78 @@ using Microsoft.AspNetCore.Mvc;
 using WebRunApplication.Services.Models;
 using WebRunApplication.Services.Interfaces;
 
-namespace WebRunApplication.Controllers
+namespace WebRunApplication.Controllers;
+
+// todo: пересмотреть логику контроллера
+public class AccountController : Controller
 {
-    
-    // todo: пересмотреть логику контроллера
-    public class AccountController : Controller
+    private readonly IAccountService _accountService;
+
+    public AccountController(IAccountService accountService)
     {
-        private readonly IAccountService _accountService;
+        _accountService = accountService;
+    }
 
-        public AccountController(IAccountService accountService)
-        {
-            _accountService = accountService;
-        }
+    [HttpGet]
+    public IActionResult Login()
+    {
+        return View();
+    }
 
-        [HttpGet]
-        public IActionResult Login()
+    [HttpPost]
+    public async Task<IActionResult> Login(AuthorizationModel model)
+    {
+        if (ModelState.IsValid)
         {
-            return View();
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> Login(AuthorizationModel model)
-        {
-            if (ModelState.IsValid)
+            var response = await _accountService.LoginAsync(model);
+            if (response.StatusCode == Domain.Enums.StatusCode.OK)
             {
-                var response = await _accountService.LoginAsync(model);
-                if (response.StatusCode == Domain.Enums.StatusCode.OK)
-                {
-                    await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme,
-                        new ClaimsPrincipal(response.Data));
+                await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme,
+                    new ClaimsPrincipal(response.Data));
 
-                    return RedirectToAction("Index", "Home");
-                }
-
-                ModelState.AddModelError("", response.Description);
+                return RedirectToAction("Index", "Home");
             }
 
-            return View(model);
+            ModelState.AddModelError("", response.Description);
         }
 
-        [HttpGet]
-        public IActionResult Register()
-        {
-            return View();
-        }
+        return View(model);
+    }
 
-        [HttpPost]
-        public async Task<IActionResult> Register(RegisterModel model)
+    [HttpGet]
+    public IActionResult Register()
+    {
+        return View();
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> Register(RegisterModel model)
+    {
+        if (ModelState.IsValid)
         {
-            if (ModelState.IsValid)
+            var response = await _accountService.RegisterAsync(model);
+            if (response.StatusCode == Domain.Enums.StatusCode.OK)
             {
-                var response = await _accountService.RegisterAsync(model);
-                if (response.StatusCode == Domain.Enums.StatusCode.OK)
-                {
-                    await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme,
-                        new ClaimsPrincipal(response.Data));
+                await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme,
+                    new ClaimsPrincipal(response.Data));
 
-                    // todo: вынести почту в конфиг
-                    var sender = new MailSender("runapp90@mail.ru", model.Email, "RunApp");
+                // todo: вынести почту в конфиг
+                var sender = new MailSender("runapp90@mail.ru", model.Email, "RunApp");
 
-                    await sender.Send("Регистрация", "Поздравляем вас с успешной регистрацией");
+                await sender.Send("Регистрация", "Поздравляем вас с успешной регистрацией");
 
-                    return RedirectToAction("Login", "Account");
-                }
-
-                ModelState.AddModelError("", response.Description);
+                return RedirectToAction("Login", "Account");
             }
 
-            return View(model);
+            ModelState.AddModelError("", response.Description);
         }
 
-        public async Task<IActionResult> Logout()
-        {
-            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-            return RedirectToAction("Index", "Home");
-        }
+        return View(model);
+    }
+
+    public async Task<IActionResult> Logout()
+    {
+        await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+        return RedirectToAction("Index", "Home");
     }
 }

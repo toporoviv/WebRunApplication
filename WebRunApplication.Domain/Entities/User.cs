@@ -1,33 +1,32 @@
 ﻿using WebRunApplication.Domain.Enums;
 
-namespace WebRunApplication.Domain.Entities
+namespace WebRunApplication.Domain.Entities;
+
+public class User
 {
-    public class User
-    {
-        public int Id { get; set; } 
+    public int Id { get; set; } 
 
-        public required string Login { get; set; }
+    public required string Login { get; set; }
 
-        public required string Password { get; set; }
+    public required string Password { get; set; }
         
-        public string Email { get; set; }
+    public string Email { get; set; }
 
-        public required string Fullname { get; set; }
+    public required string Fullname { get; set; }
 
-        public int Age { get; set; }
+    public int Age { get; set; }
 
-        public Gender Gender { get; set; }
+    public Gender Gender { get; set; }
 
-        /// <summary>
-        /// Вес в кг
-        /// </summary>
-        public uint Weight { get; set; }
+    /// <summary>
+    /// Вес в кг
+    /// </summary>
+    public uint Weight { get; set; }
 
-        /// <summary>
-        /// Рост в см
-        /// </summary>
-        public uint Height { get; set; }
+    /// <summary>
+    /// Рост в см
+    /// </summary>
+    public uint Height { get; set; }
 
-        public Role Role { get; set; }
-    }
+    public Role Role { get; set; }
 }

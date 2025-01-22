@@ -4,15 +4,8 @@ using WebRunApplication.Infrastructure.Options;
 
 namespace WebRunApplication.Infrastructure;
 
-internal abstract class DbRepository
+internal abstract class DbRepository(PostgreOptions postgreOptions)
 {
-    private readonly PostgreOptions _dalSettings;
-
-    protected DbRepository(PostgreOptions dalSettings)
-    {
-        _dalSettings = dalSettings;
-    }
-
     public TransactionScope CreateTransactionScope
     (
         IsolationLevel level = IsolationLevel.ReadCommitted
@@ -30,7 +23,7 @@ internal abstract class DbRepository
 
     protected async Task<NpgsqlConnection> GetAndOpenConnectionAsync(CancellationToken cancellationToken)
     {
-        var connection = new NpgsqlConnection(_dalSettings.ConnectionString);
+        var connection = new NpgsqlConnection(postgreOptions.ConnectionString);
         await connection.OpenAsync(cancellationToken);
         await connection.ReloadTypesAsync(cancellationToken);
         return connection;

@@ -1,11 +1,10 @@
-﻿namespace WebRunApplication.Domain.Enums
-{
-    public enum StatusCode
-    {
-        NotFound = 0,
-        AlreadyExists = 1,
+﻿namespace WebRunApplication.Domain.Enums;
 
-        OK = 200,
-        InternalServerError = 500
-    }
+public enum StatusCode
+{
+    NotFound = 0,
+    AlreadyExists = 1,
+
+    OK = 200,
+    InternalServerError = 500
 }

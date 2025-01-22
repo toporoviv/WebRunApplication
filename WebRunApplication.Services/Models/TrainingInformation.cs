@@ -1,9 +1,8 @@
 ﻿using WebRunApplication.Domain.Entities;
 
-namespace WebRunApplication.Services.Models
+namespace WebRunApplication.Services.Models;
+
+public class TrainingInformation : Indicator
 {
-    public class TrainingInformation : Indicator
-    {
-        public string Title { get; set; }
-    }
+    public string Title { get; set; }
 }

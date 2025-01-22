@@ -5,99 +5,98 @@ using WebRunApplication.Infrastructure.Interfaces;
 using WebRunApplication.Services.Extensions;
 using WebRunApplication.Services.Interfaces;
 
-namespace WebRunApplication.Services.Implementations
+namespace WebRunApplication.Services.Implementations;
+
+public class HelpMessageMessageService
+(
+    ILogger<HelpMessageMessageService> logger,
+    IHelpMessageRepository helpRepository
+) : IHelpMessageService
 {
-    public class HelpMessageMessageService
+    public async Task<IBaseResponse<HelpMessage>> CreateAsync
     (
-        ILogger<HelpMessageMessageService> logger,
-        IHelpMessageRepository helpRepository
-    ) : IHelpMessageService
+        Infrastructure.Models.HelpMessage model,
+        CancellationToken cancellationToken
+    )
     {
-        public async Task<IBaseResponse<HelpMessage>> CreateAsync
-        (
-            Infrastructure.Models.HelpMessage model,
-            CancellationToken cancellationToken
-        )
+        try
         {
-            try
-            {
-                var result = await helpRepository.CreateHelpMessageAsync(model, cancellationToken);
+            var result = await helpRepository.CreateHelpMessageAsync(model, cancellationToken);
 
-                return new BaseResponse<HelpMessage>
-                {
-                    Data = result,
-                    StatusCode = StatusCode.OK,
-                };
-            }
-            catch (Exception exception)
+            return new BaseResponse<HelpMessage>
             {
-                logger.LogError(exception, $"[{nameof(HelpMessageMessageService)}.{nameof(CreateAsync)}] error: {exception.Message}");
-                return new BaseResponse<HelpMessage>()
-                {
-                    StatusCode = StatusCode.InternalServerError,
-                    Description = $"Внутренняя ошибка: {exception.Message}"
-                };
-            }
+                Data = result,
+                StatusCode = StatusCode.OK,
+            };
         }
-
-        public async Task<IBaseResponse<bool>> DeleteAsync(int id, CancellationToken cancellationToken)
+        catch (Exception exception)
         {
-            try
+            logger.LogError(exception, $"[{nameof(HelpMessageMessageService)}.{nameof(CreateAsync)}] error: {exception.Message}");
+            return new BaseResponse<HelpMessage>()
             {
-                var help = await helpRepository.GetHelpMessageByIdAsync(id, cancellationToken);
-                if (help is null)
-                {
-                    return new BaseResponse<bool>
-                    {
-                        StatusCode = StatusCode.NotFound,
-                        Data = false
-                    };
-                }
+                StatusCode = StatusCode.InternalServerError,
+                Description = $"Внутренняя ошибка: {exception.Message}"
+            };
+        }
+    }
 
-                await helpRepository.DeleteHelpMessage(help.Id, cancellationToken);
-                logger.LogInformation($"[{nameof(HelpMessageMessageService)}.{nameof(DeleteAsync)}] вопрос удален");
-
+    public async Task<IBaseResponse<bool>> DeleteAsync(int id, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var help = await helpRepository.GetHelpMessageByIdAsync(id, cancellationToken);
+            if (help is null)
+            {
                 return new BaseResponse<bool>
                 {
-                    StatusCode = StatusCode.OK,
-                    Data = true
+                    StatusCode = StatusCode.NotFound,
+                    Data = false
                 };
             }
-            catch (Exception exception)
+
+            await helpRepository.DeleteHelpMessage(help.Id, cancellationToken);
+            logger.LogInformation($"[{nameof(HelpMessageMessageService)}.{nameof(DeleteAsync)}] вопрос удален");
+
+            return new BaseResponse<bool>
             {
-                logger.LogError(exception, $"[{nameof(HelpMessageMessageService)}.{nameof(DeleteAsync)}] error: {exception.Message}");
-                return new BaseResponse<bool>()
-                {
-                    StatusCode = StatusCode.InternalServerError,
-                    Description = $"Внутренняя ошибка: {exception.Message}"
-                };
-            }
+                StatusCode = StatusCode.OK,
+                Data = true
+            };
         }
-
-        public async Task<IBaseResponse<IEnumerable<HelpMessage>>> GetAllAsync(CancellationToken cancellationToken)
+        catch (Exception exception)
         {
-            try
+            logger.LogError(exception, $"[{nameof(HelpMessageMessageService)}.{nameof(DeleteAsync)}] error: {exception.Message}");
+            return new BaseResponse<bool>()
             {
-                var helps = (await helpRepository.GetHelpMessagesAsync(cancellationToken))
-                    .ToList();
-                
-                logger.LogInformation($"[{nameof(HelpMessageMessageService)}.{nameof(GetAllAsync)}] получено вопросов {helps.Count}");
+                StatusCode = StatusCode.InternalServerError,
+                Description = $"Внутренняя ошибка: {exception.Message}"
+            };
+        }
+    }
 
-                return new BaseResponse<IEnumerable<HelpMessage>>
-                {
-                    Data = helps,
-                    StatusCode = StatusCode.OK,
-                };
-            }
-            catch (Exception exception)
+    public async Task<IBaseResponse<IEnumerable<HelpMessage>>> GetAllAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            var helps = (await helpRepository.GetHelpMessagesAsync(cancellationToken))
+                .ToList();
+                
+            logger.LogInformation($"[{nameof(HelpMessageMessageService)}.{nameof(GetAllAsync)}] получено вопросов {helps.Count}");
+
+            return new BaseResponse<IEnumerable<HelpMessage>>
             {
-                logger.LogError(exception, $"[{nameof(HelpMessageMessageService)}.{nameof(GetAllAsync)}] error: {exception.Message}");
-                return new BaseResponse<IEnumerable<HelpMessage>>
-                {
-                    StatusCode = StatusCode.InternalServerError,
-                    Description = $"Внутренняя ошибка: {exception.Message}"
-                };
-            }
+                Data = helps,
+                StatusCode = StatusCode.OK,
+            };
+        }
+        catch (Exception exception)
+        {
+            logger.LogError(exception, $"[{nameof(HelpMessageMessageService)}.{nameof(GetAllAsync)}] error: {exception.Message}");
+            return new BaseResponse<IEnumerable<HelpMessage>>
+            {
+                StatusCode = StatusCode.InternalServerError,
+                Description = $"Внутренняя ошибка: {exception.Message}"
+            };
         }
     }
 }

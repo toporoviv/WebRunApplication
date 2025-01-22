@@ -1,13 +1,12 @@
 ﻿using WebRunApplication.Domain.Enums;
 
-namespace WebRunApplication.Services
+namespace WebRunApplication.Services;
+
+public interface IBaseResponse<T>
 {
-    public interface IBaseResponse<T>
-    {
-        string Description { get; }
+    string Description { get; }
 
-        StatusCode StatusCode { get; }
+    StatusCode StatusCode { get; }
 
-        T Data { get; }
-    }
+    T Data { get; }
 }

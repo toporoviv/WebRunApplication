@@ -1,9 +1,8 @@
-﻿namespace WebRunApplication.Services.Models
-{
-    public class TrainingTotalInformationViewModel
-    {
-        public string Title { get; set; }
+﻿namespace WebRunApplication.Services.Models;
 
-        public TimeSpan Duration { get; set; }
-    }
+public class TrainingTotalInformationViewModel
+{
+    public string Title { get; set; }
+
+    public TimeSpan Duration { get; set; }
 }

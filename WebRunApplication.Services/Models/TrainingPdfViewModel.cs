@@ -1,9 +1,8 @@
-﻿namespace WebRunApplication.Services.Models
-{
-    public class TrainingPdfViewModel
-    {
-        public string Title { get; set; }
+﻿namespace WebRunApplication.Services.Models;
 
-        public DateTime Date { get; set; }
-    }
+public class TrainingPdfViewModel
+{
+    public string Title { get; set; }
+
+    public DateTime Date { get; set; }
 }

@@ -1,9 +1,8 @@
-﻿namespace WebRunApplication.Services.Models
-{
-    public class TimeInterval
-    {
-        public DateTime Begin { get; set; }
+﻿namespace WebRunApplication.Services.Models;
 
-        public DateTime End { get; set; }
-    }
+public class TimeInterval
+{
+    public DateTime Begin { get; set; }
+
+    public DateTime End { get; set; }
 }

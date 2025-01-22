@@ -3,103 +3,100 @@ using Microsoft.Extensions.Logging;
 using WebRunApplication.Domain.Entities;
 using WebRunApplication.Domain.Enums;
 using WebRunApplication.Infrastructure.Interfaces;
+using WebRunApplication.Services.Extensions;
 using WebRunApplication.Services.Interfaces;
 
-namespace WebRunApplication.Services.Implementations
+namespace WebRunApplication.Services.Implementations;
+
+public class IndicatorService(
+    IIndicatorRepository indicatorRepository,
+    ILogger<IndicatorService> logger)
+    : IIndicatorService
 {
-    public class IndicatorService : IIndicatorService
+    public async Task<IBaseResponse<Indicator>> CreateAsync
+    (
+        Infrastructure.Models.Indicator model,
+        CancellationToken cancellationToken
+    )
     {
-        private readonly IBaseRepository<Indicator> _indicatorRepository;
-        private readonly ILogger<IndicatorService> _logger;
-
-        public IndicatorService(
-            IBaseRepository<Indicator> indicatorRepository,
-            ILogger<IndicatorService> logger)
+        try
         {
-            _indicatorRepository = indicatorRepository;
-            _logger = logger;
+            var result = await indicatorRepository.CreateIndicatorAsync(model, cancellationToken);
+
+            return new BaseResponse<Indicator>()
+            {
+                Data = result,
+                Description = "Показатель добавлен",
+                StatusCode = StatusCode.OK
+            };
         }
-
-        public async Task<IBaseResponse<Indicator>> Create(Indicator model)
+        catch (Exception ex)
         {
-            try
+            logger.LogError(ex, $"[{nameof(IndicatorService)}.{nameof(CreateAsync)}] error: {ex.Message}");
+            return new BaseResponse<Indicator>()
             {
-                await _indicatorRepository.Create(model);
-
-                return new BaseResponse<Indicator>()
-                {
-                    Data = model,
-                    Description = "Показатель добавлен",
-                    StatusCode = StatusCode.OK
-                };
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, $"[{nameof(IndicatorService)}.{nameof(Create)}] error: {ex.Message}");
-                return new BaseResponse<Indicator>()
-                {
-                    StatusCode = StatusCode.InternalServerError,
-                    Description = $"Внутренняя ошибка: {ex.Message}"
-                };
-            }
+                StatusCode = StatusCode.InternalServerError,
+                Description = $"Внутренняя ошибка: {ex.Message}"
+            };
         }
+    }
 
-        public async Task<IBaseResponse<IEnumerable<Indicator>>> GetAll()
+    public async Task<IBaseResponse<IEnumerable<Indicator>>> GetAllAsync(CancellationToken cancellationToken)
+    {
+        try
         {
-            try
-            {
-                var indicators = await _indicatorRepository.GetAll().ToListAsync();
+            var indicators = (await indicatorRepository.GetIndicatorsAsync(cancellationToken))
+                .ToList();
 
-                _logger.LogInformation($"[{nameof(IndicatorService)}.{nameof(GetAll)}] получено элементов {indicators.Count}");
-                return new BaseResponse<IEnumerable<Indicator>>()
-                {
-                    Data = indicators,
-                    StatusCode = StatusCode.OK
-                };
-            }
-            catch (Exception ex)
+            logger.LogInformation($"[{nameof(IndicatorService)}.{nameof(GetAllAsync)}] получено элементов {indicators.Count}");
+            return new BaseResponse<IEnumerable<Indicator>>()
             {
-                _logger.LogError(ex, $"[{nameof(IndicatorService)}.{nameof(GetAll)}] error: {ex.Message}");
-                return new BaseResponse<IEnumerable<Indicator>>()
-                {
-                    StatusCode = StatusCode.InternalServerError,
-                    Description = $"Внутренняя ошибка: {ex.Message}"
-                };
-            }
+                Data = indicators,
+                StatusCode = StatusCode.OK
+            };
         }
-
-        public async Task<IBaseResponse<bool>> Delete(long id)
+        catch (Exception ex)
         {
-            try
+            logger.LogError(ex, $"[{nameof(IndicatorService)}.{nameof(GetAllAsync)}] error: {ex.Message}");
+            return new BaseResponse<IEnumerable<Indicator>>()
             {
-                var indicator = await _indicatorRepository.GetAll().FirstOrDefaultAsync(x => x.Id == id);
-                if (indicator is null)
-                {
-                    return new BaseResponse<bool>
-                    {
-                        StatusCode = StatusCode.NotFound,
-                        Data = false
-                    };
-                }
+                StatusCode = StatusCode.InternalServerError,
+                Description = $"Внутренняя ошибка: {ex.Message}"
+            };
+        }
+    }
 
-                await _indicatorRepository.Delete(indicator);
-                _logger.LogInformation($"{nameof(IndicatorService)}.{nameof(Delete)} показатель удален");
-
+    public async Task<IBaseResponse<bool>> DeleteAsync(int id, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var indicator = await indicatorRepository.GetIndicatorByIdAsync(id, cancellationToken);
+            if (indicator is null)
+            {
                 return new BaseResponse<bool>
                 {
-                    StatusCode = StatusCode.OK,
-                    Data = true
+                    StatusCode = StatusCode.NotFound,
+                    Data = false
                 };
             }
-            catch (Exception ex)
+
+            await indicatorRepository.DeleteIndicatorAsync(indicator.Id, cancellationToken);
+            logger.LogInformation($"{nameof(IndicatorService)}.{nameof(DeleteAsync)} показатель удален");
+
+            return new BaseResponse<bool>
             {
-                _logger.LogError(ex, $"[{nameof(IndicatorService)}.{nameof(Delete)}] error: {ex.Message}");
-                return new BaseResponse<bool>()
-                {
-                    StatusCode = StatusCode.InternalServerError,
-                    Description = $"Внутренняя ошибка: {ex.Message}"
-                };
-            }
+                StatusCode = StatusCode.OK,
+                Data = true
+            };
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, $"[{nameof(IndicatorService)}.{nameof(DeleteAsync)}] error: {ex.Message}");
+            return new BaseResponse<bool>
+            {
+                StatusCode = StatusCode.InternalServerError,
+                Description = $"Внутренняя ошибка: {ex.Message}"
+            };
         }
     }
 }

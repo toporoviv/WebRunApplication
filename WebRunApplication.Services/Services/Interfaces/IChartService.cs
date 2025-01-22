@@ -1,11 +1,10 @@
-﻿namespace WebRunApplication.Services.Interfaces
+﻿namespace WebRunApplication.Services.Interfaces;
+
+public interface IChartService
 {
-    public interface IChartService
-    {
-        Task<IBaseResponse<Dictionary<string, int>>> GetTrainingCountAsync
-        (
-            string login,
-            CancellationToken cancellationToken = default
-        );
-    }
+    Task<IBaseResponse<Dictionary<string, int>>> GetTrainingCountAsync
+    (
+        string login,
+        CancellationToken cancellationToken = default
+    );
 }

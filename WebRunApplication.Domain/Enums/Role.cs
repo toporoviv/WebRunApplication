@@ -1,8 +1,7 @@
-﻿namespace WebRunApplication.Domain.Enums
+﻿namespace WebRunApplication.Domain.Enums;
+
+public enum Role
 {
-    public enum Role
-    {
-        User,
-        Admin
-    }
+    User,
+    Admin
 }

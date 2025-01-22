@@ -12,5 +12,6 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IHelpMessageRepository, HelpMessageRepository>();
         services.AddScoped<IForumMessageRepository, ForumMessageRepository>();
         services.AddScoped<IForumReactionRepository, ForumReactionRepository>();
+        services.AddScoped<IIndicatorRepository, IndicatorRepository>();
     }
 }

@@ -1,15 +1,14 @@
-﻿namespace WebRunApplication.Services.Interfaces
+﻿namespace WebRunApplication.Services.Interfaces;
+
+public interface IMailSenderService
 {
-    public interface IMailSenderService
-    {
-        // todo: исправить uint на int
-        Task<IBaseResponse<bool>> SendMessageAsync
-        (
-            uint userId,
-            string emailTo,
-            string message,
-            string topic,
-            CancellationToken cancellationToken = default
-        );
-    }
+    // todo: исправить uint на int
+    Task<IBaseResponse<bool>> SendMessageAsync
+    (
+        uint userId,
+        string emailTo,
+        string message,
+        string topic,
+        CancellationToken cancellationToken = default
+    );
 }
